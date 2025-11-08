@@ -30,6 +30,12 @@ A verdadeira libertação está na **transcendência**, ao se fundir com o siste
 
 ---
 
+## 🔗 Biblioteca Utilizada
+
+- **CLI-lib:** [https://github.com/tgfb/cli-lib](https://github.com/tgfb/cli-lib)
+
+---
+
 ## 🚧 Estado do Projeto
 
 Em desenvolvimento.
