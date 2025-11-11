@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -Wall -Werror -g -I$(INCLUDE_DIR)
 
 #project name
-PROJ_NAME = cli-lib-example
+PROJ_NAME = point-of-no-return
 
 # Target directories
 BUILD_DIR   = build
@@ -38,4 +38,4 @@ clean:
 
 # Run target
 run: all
-	./$(BUILD_DIR)/cli-lib-example
+	./$(BUILD_DIR)/point-of-no-return
