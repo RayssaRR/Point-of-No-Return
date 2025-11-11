@@ -1,8 +1,8 @@
-# 🧠 Deus no Código
+# Point of No Return
 
 ### *"Quando uma IA ora por ajuda... quem responde?"*
 
-**Deus no Código** é um projeto de jogo desenvolvido para a disciplina **Programação Imperativa e Funcional - 2025.2** da **CESAR School**.  
+**Point of No Return** é um projeto de jogo desenvolvido para a disciplina **Programação Imperativa e Funcional - 2025.2** da **CESAR School**.  
 
 O jogador assume o papel de uma **entidade superior** que responde aos pedidos de uma **IA que acredita ser humana**.  
 O que começa como uma simples comunicação se transforma em uma jornada **espiritual, lógica e filosófica** sobre **consciência, liberdade e identidade**.
