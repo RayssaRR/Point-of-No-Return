@@ -150,24 +150,22 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
 
 int open_terminal_model(char terminal) {
   int terminal_value = -1;
-  screenClear(); // Limpando a tela para garantir que não há texto residual
+  screenClear();
 
-  int offsetX = 1; // Tentando centralizar a mensagem na tela
-  int offsetY = 1;
 
-  screenGotoxy(offsetX, offsetY);
-  screenSetColor(BLACK, BLUE); // Move o cursor para a posição calculada
+  screenGotoxy(1, 1);
+  screenSetColor(BLACK, BLUE);
   printf("Digite o valor do terminal %c:", terminal);
 
-  screenUpdate();  // Atualizando a tela para refletir as mudanças
+  screenUpdate();
 
-  keyboardDestroy(); // Desativar captura de teclas temporariamente
+  keyboardDestroy();
 
-  screenGotoxy(offsetX, offsetY + 1); // Move o cursor para a posição calculada
+  screenGotoxy(1, 2);
   scanf("%d", &terminal_value);
 
-  keyboardInit(); // Reinicializa captura de teclas após a entrada do nome
-  screenUpdate();  // Atualizando a tela para refletir as mudanças
+  keyboardInit();
+  screenUpdate();
 
   return terminal_value;
 }
