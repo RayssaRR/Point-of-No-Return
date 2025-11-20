@@ -152,7 +152,6 @@ int open_terminal_model(char terminal) {
   int terminal_value = -1;
   screenClear();
 
-
   screenGotoxy(1, 1);
   screenSetColor(BLACK, BLUE);
   printf("Digite o valor do terminal %c:", terminal);
