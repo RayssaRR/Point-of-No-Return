@@ -18,7 +18,7 @@ typedef struct {
 
 char stage_two_map[LINE][COLUMN + 1] = {
     "########################################",
-    "#................^.....................#",            
+    "#........................o.............#",            
     "####.###########################.#######",
     "##.........xxxxxxxxx......######.....###",
     "##.#####.######X#########.##########.###",
@@ -79,40 +79,51 @@ char movePlayer_stageTwo(
     int x = player->x;
     int y = player->y;
 
+
     if (direction == UP) y--;
     else if (direction == DOWN) y++;
     else if (direction == LEFT) x--;
     else if (direction == RIGHT) x++;
 
-    char next = stage_two_map[y][x];  
+    char next = stage_two_map[y][x];
+
 
     if (next == '#') {
         return next;
     }
 
     map[player->y][player->x] = stage_two_map[player->y][player->x];
- 
-
 
     *lastChar = next;
 
     if (next == '^') {
         player->score -= 5;
+
+        stage_two_map[y][x] = '.';
+        map[y][x] = '.';
+
+        player->x = x;
+        player->y = y;
+        map[y][x] = 'O';
+
+        return next;
     }
 
     if (next == 'o') {
         map[player->y][player->x] = stage_two_map[player->y][player->x];
+
         player->x = 1;
         player->y = 1;
+
         map[player->y][player->x] = 'O';
         return next;
     }
 
     player->x = x;
     player->y = y;
-
     map[y][x] = 'O';
 
+    
     if (next == 'S') {
         *running = 0;
         player->win = 1;
@@ -120,6 +131,7 @@ char movePlayer_stageTwo(
 
     return next;
 }
+
 
 
 int stage_two(char **allocated_map, Player *player) {
