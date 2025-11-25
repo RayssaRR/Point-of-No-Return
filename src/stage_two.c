@@ -14,8 +14,6 @@ typedef struct {
     int terminals[3];
 } StageTwoSentence;
 
-
-
 char stage_two_map[LINE][COLUMN + 1] = {
     "########################################",
     "#........................o.............#",            
@@ -66,8 +64,6 @@ void openTerminalStageTwo(int terminals[], char terminal, StageTwoSentence stage
 int open_terminal_modelStageTwo(char terminal);
 void resetIndexStageTwo(int *item, int total);
 void checkTimerStageTwo(Player *player, int stageTime, int *running);
-
-
 
 char movePlayer_stageTwo(
     MoveDirection direction,
@@ -143,7 +139,6 @@ char movePlayer_stageTwo(
 
 int stage_two(char **allocated_map, Player *player) {
 
-
     player->x = 1;
     player->y = 1;
 
@@ -212,10 +207,6 @@ int stage_two(char **allocated_map, Player *player) {
 
                 lastCameraSwitch = currentTime; // marca a hora da troca
             }
-
-
-            // checkTimerStageTwo(player, stageTime, &running);
-
 
             // detectar câmeras
             int caughtByW = (stage_two_map[player->y][player->x] == 'w' && currentCamera == 0);
@@ -455,27 +446,5 @@ void resetIndexStageTwo(int *current_sentence_index, int total_sentences) {
     *current_sentence_index = (*current_sentence_index + 1) % total_sentences;
     screenUpdate();
 }
-
-// void checkTimerStageTwo (Player *player, int stageTime, int *running) {
-//     // tempo passado desde timerInit
-//     int elapsed = getTimeDiff();  
-//     int remaining = stageTime - elapsed;  // tempo restante
-
-//     if (remaining < 0) remaining = 0;
-
-//     // mostra o timer na tela
-//     screenGotoxy(MAXX - 15, MAXY - 12);
-//     printf("Tempo: %d s", remaining / 1000);
-
-//     // se o tempo acabou
-//     if (remaining <= 0) {
-//         *running = 0;     
-//         player->win = 0;  
-//         screenClear();
-//         screenGotoxy(1,1);
-//         printf("Tempo esgotado!\n");
-//         screenUpdate();
-//     }
-// }
 
 

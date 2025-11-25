@@ -79,7 +79,6 @@ int stage_three(char **allocated_map, Player *player)
 
     while (1)
     {
-
         setupStageThree(player, allocated_map, terminals, &camera, stage_Three_map);
         printMapThree(allocated_map, player, terminals, &camera, sentencesThree, &current_sentence_index, currentCamera);
         timerInit(3000);
