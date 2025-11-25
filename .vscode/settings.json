@@ -1,6 +1,13 @@
 {
     "files.associations": {
         "timer.h": "c",
+<<<<<<< HEAD
         "stage_four.h": "c"
+=======
+        "string.h": "c",
+        "keyboard.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
+>>>>>>> main
     }
 }

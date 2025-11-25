@@ -3,7 +3,7 @@
  * Created on Aug, 23th 2023
  * Author: Tiago Barros
  * Based on "From C to C++ course - 2002"
- */
+*/
 
 #include "timer.h"
 #include <sys/time.h>
@@ -32,8 +32,8 @@ void timerUpdateTimer(int valueMilliSec)
 int getTimeDiff()
 {
     gettimeofday(&now, NULL);
-    long diff = (((now.tv_sec - timer.tv_sec) * 1000000) + now.tv_usec - timer.tv_usec) / 1000;
-    return (int)diff;
+    long diff = (((now.tv_sec - timer.tv_sec) * 1000000) + now.tv_usec - timer.tv_usec)/1000;
+    return (int) diff;
 }
 
 int timerTimeOver()
