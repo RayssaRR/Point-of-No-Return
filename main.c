@@ -4,6 +4,9 @@
 #include "timer.h"
 #include "screen.h"
 #include "keyboard.h"
+#include "stage_four.h"
+
+extern char lastChar;
 
 #define COLUMN 40
 #define LINE 19
@@ -15,19 +18,11 @@ int terminal_a = 0;
 int terminal_b = 0;
 int terminal_c = 0;
 
-typedef struct
-{
-    char name[100];
-    double score;
-    int win;
-} Player;
 
 void homeMenu(int *running, int *stop);
 void printMap(char **map, Player player, int terminals[]);
 void movePlayer(int x, int y, char **map, int *running, Player *player, int terminals[]);
 void resetGame(Player *player, char **map, int terminals[]);
-
-char lastChar = '.';
 
 char initialMap[LINE][COLUMN + 1] = {
     "########################################",
@@ -52,72 +47,22 @@ char initialMap[LINE][COLUMN + 1] = {
 
 int main()
 {
-
-    int i;
-    int running = 1;
-    int stop = 1;
-    char **map;
-
-    int terminals[3] = {0, 0, 0};
+    // aloca o mapa dinamicamente
+    char **map = malloc(LINE * sizeof(char *));
+    for (int i = 0; i < LINE; i++)
+        map[i] = malloc((COLUMN + 1) * sizeof(char));
 
     Player player;
+    player.score = 0;
+    player.win = 0;
 
-    map = (char **)calloc(LINE, sizeof(char *));
-    for (i = 0; i < LINE; i++)
-    {
-        map[i] = (char *)calloc(COLUMN + 1, sizeof(char));
-    }
+    // chama só a sua fase
+    stage_four(map, &player);
 
-    while (1)
-    {
-        homeMenu(&running, &stop);
-        if (stop == 0)
-            break;
-
-        while (1)
-        {
-            resetGame(&player, map, terminals);
-            timerInit(1);
-
-            while (running)
-            {
-                if (keyhit())
-                {
-                    char ch = readch();
-
-                    if (ch == 'w')
-                    {
-                        movePlayer(player_x, player_y - 1, map, &running, &player, terminals);
-                    }
-                    else if (ch == 's')
-                    {
-                        movePlayer(player_x, player_y + 1, map, &running, &player, terminals);
-                    }
-                    else if (ch == 'a')
-                    {
-                        movePlayer(player_x - 1, player_y, map, &running, &player, terminals);
-                    }
-                    else if (ch == 'd')
-                    {
-                        movePlayer(player_x + 1, player_y, map, &running, &player, terminals);
-                    }
-                    else if (ch == 'l')
-                    {
-                        running = 0;
-                        player.win = 0;
-                    }
-
-                    printMap(map, player, terminals);
-                }
-            }
-
-            if (running == 0)
-                break;
-        }
-    }
-
-    keyboardInit();
-    screenInit(1);
+    // libera memória
+    for (int i = 0; i < LINE; i++)
+        free(map[i]);
+    free(map);
 
     return 0;
 }

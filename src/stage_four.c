@@ -34,30 +34,29 @@ char movePlayerFour(MoveDirection direction, char **map, int *running, Player *p
 
 char stage_four_map[LINE][COLUMN + 1] = {
     "########################################",
-    "#@..............#######...............##",
+    "#@..............#######................#",
     "###.###################.################",
-    "#...#...................#.............##",
-    "#.###.#######.#.#######.#############.##",
-    "#.#...#.....#.#.........#.#.........#.##",
-    "#.#.###.###C#.#.#######.#.#.#####.#.####",
-    "#...#...#.###.#.#.....#.#.#.#.....#...##",
-    "#.#.#.###.#.#.#.#.###.#.#.#.#.###.######",
-    "#.#.#.#...#.#.#.#.#.#.#...#.#.#.....#.##",
-    "#.#.#.#.###.#.#.#...#...###.#.#######.##",
-    "#.#.#.#.........###.#.###.#..........#.#",
-    "#.#.#.#.#.###.###.#.#.#.#.#.#########.##",
-    "#.#.#...#.#...#B#.#.#.#.#.#..........#.#",
-    "#.#.#.#.#.#.###.#.#.#.#.#.#.#######.##.#",
-    "#.#.#.#.#.#.#...#.#.#.#.#.#.......#....#",
-    "#.#.#.#.#.#.#.#####.#.#.############.###",
-    "#.#.#.#S#.#.#.........#...............A#",
+    "#...#........zzzz.......#.............##",
+    "#.###.#######.#z#######.#############.##",
+    "#.#...#.....#.#zzzz.....#.#.........#..#",
+    "#w#.###.###C#.#z#######.#.#.#####.#.####",
+    "#www#...#.###.#z#.....#.#.#.#.....#...##",
+    "#w#.#.###.#.#.#.#.###.#.#.#.#.###.######",
+    "#.#.#.#...#x#.#.#.#.#.#...#.#.#.....#.##",
+    "#.#.#.#.###x#.#.#...#...###.#.#######..#",
+    "#.#.#.#..xxxxx..###.#.###.#..........#.#",
+    "#.#.#.#.#.###x###.#.#.#.#.#.########...#",
+    "#.#.#...#.#..x#B#.#.#.#.#.#..........#.#",
+    "#.#.#.#.#.#.###.#.#.#.#.#.#.#######.####",
+    "#.#.#.#.#.#.#...#.#y#.#.#.#.......#.zzz#",
+    "#.#.#.#.#.#.#.#####y#y#.############z###",
+    "#.#.#.#S#.#.#...yyyyyy#...........zzz.A#",
     "########################################"};
 
 SentenceModel sentencesFour[4] = {
     {"(A ∧ B) → C", {1, 1, 0}},
     {"¬A ∨ (B ∧ C)", {0, 1, 1}},
-    {"A ⊕ C", {1, 0, 1}},
-    {"(A ∧ ¬B) ∨ (B ∧ ¬C)", {1, 0, 0}}};
+    {"A ⊕ C", {1, 0, 1}}};
 
 int stage_four(char **allocated_map, Player *player)
 {
@@ -111,6 +110,17 @@ int stage_four(char **allocated_map, Player *player)
             if (timerTimeOver() == 1)
             {
                 resetIndexFour(&currentCamera, 4);
+                printMapFour(allocated_map, player, terminals, &camera, sentencesFour, &current_sentence_index, currentCamera);
+            }
+
+            int caughtByW = (stage_four_map[player->y][player->x] == 'w' && currentCamera == 0);
+            int caughtByX = (stage_four_map[player->y][player->x] == 'x' && currentCamera == 1);
+            int caughtByY = (stage_four_map[player->y][player->x] == 'y' && currentCamera == 2);
+            int caughtByZ = (stage_four_map[player->y][player->x] == 'z' && currentCamera == 3);
+            if (caughtByW || caughtByX || caughtByY || caughtByZ)
+            {
+                resetIndexFour(&currentCamera, 4);
+                resetIndexFour(&current_sentence_index, 2);
                 printMapFour(allocated_map, player, terminals, &camera, sentencesFour, &current_sentence_index, currentCamera);
             }
         }
@@ -181,23 +191,74 @@ void printMapFour(
         {
             char ch = map[y][x];
 
-            switch (ch)
+            if (ch == '@')
             {
-            case '#':
-                screenSetColor(BLUE, BLUE);
-                break;
-            case '@':
                 screenSetColor(GREEN, BLACK);
-                break;
-            case 'A':
-            case 'B':
-            case 'C':
-                screenSetColor(WHITE, BLACK);
-                break;
-            case 'S':
-                screenSetColor(BLACK, GREEN);
-                break;
-            default:
+            }
+            else if (ch == '#')
+            {
+                screenSetColor(BLUE, BLUE);
+            }
+            else if (ch == 'O')
+            {
+                screenSetColor(GREEN, BLACK);
+            }
+            else if (ch == 'S')
+            {
+                if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
+                    terminals[1] == sentences[*current_sentence_index].terminals[1] &&
+                    terminals[2] == sentences[*current_sentence_index].terminals[2])
+                {
+                    screenSetColor(BLUE, GREEN);
+                }
+                else
+                {
+                    screenSetColor(BLUE, RED);
+                }
+            }
+            else if (ch == 'A')
+            {
+                screenSetColor(terminals[0] == -1 ? RED : BLUE, terminals[0] == -1 ? YELLOW : GREEN);
+            }
+            else if (ch == 'B')
+            {
+                screenSetColor(terminals[1] == -1 ? RED : BLUE, terminals[1] == -1 ? YELLOW : GREEN);
+            }
+            else if (ch == 'C')
+            {
+                screenSetColor(terminals[2] == -1 ? RED : BLUE, terminals[2] == -1 ? YELLOW : GREEN);
+            }
+            else if (ch == '^')
+            {
+                screenSetColor(RED, BLACK);
+            }
+            else if (ch == 'o')
+            {
+                screenSetColor(BLACK, WHITE);
+            }
+
+            else if (ch == 'W' || ch == 'X' || ch == 'Y' || ch == 'Z')
+            {
+                screenSetColor(BLUE, BROWN);
+            }
+            else if (ch == 'w')
+            {
+                screenSetColor(currentCamera == 0 ? RED : BLACK, currentCamera == 0 ? RED : BLACK);
+            }
+            else if (ch == 'x')
+            {
+                screenSetColor(currentCamera == 1 ? RED : BLACK, currentCamera == 1 ? RED : BLACK);
+            }
+            else if (ch == 'y')
+            {
+                screenSetColor(currentCamera == 2 ? RED : BLACK, currentCamera == 2 ? RED : BLACK);
+            }
+            else if (ch == 'z')
+            {
+                screenSetColor(currentCamera == 3 ? RED : BLACK, currentCamera == 3 ? RED : BLACK);
+            }
+            else
+            {
                 screenSetColor(BLACK, BLACK);
             }
 
@@ -211,6 +272,53 @@ void printMapFour(
 
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Sentença: %s", sentences[*current_sentence_index].sentence);
+
+    screenGotoxy(MAXX - 15, MAXY - 16);
+    if (terminals[0] == sentences[*current_sentence_index].terminals[0])
+    {
+        screenSetColor(BLACK, GREEN);
+        printf("Terminal A: OK ");
+    }
+    else
+    {
+        screenSetColor(BLACK, BROWN);
+        printf("Terminal A: -- ");
+    }
+
+    screenGotoxy(MAXX - 15, MAXY - 15);
+    if (terminals[1] == sentences[*current_sentence_index].terminals[1])
+    {
+        screenSetColor(BLACK, GREEN);
+        printf("Terminal B: OK ");
+    }
+    else
+    {
+        screenSetColor(BLACK, BROWN);
+        printf("Terminal B: -- ");
+    }
+
+    screenGotoxy(MAXX - 15, MAXY - 14);
+    if (terminals[2] == sentences[*current_sentence_index].terminals[2])
+    {
+        screenSetColor(BLACK, GREEN);
+        printf("Terminal C: OK ");
+    }
+    else
+    {
+        screenSetColor(BLACK, BROWN);
+        printf("Terminal C: -- ");
+    }
+
+    if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
+        terminals[1] == sentences[*current_sentence_index].terminals[1] &&
+        terminals[2] == sentences[*current_sentence_index].terminals[2])
+    {
+        screenSetColor(GREEN, GREEN);
+    }
+    else
+    {
+        screenSetColor(BLUE, BLUE);
+    }
 
     screenUpdate();
 }
@@ -252,10 +360,9 @@ char movePlayerFour(MoveDirection direction, char **map, int *running, Player *p
 
     char next = map[y][x];
 
-    if (next == '.' || next == '@' || next == 'A' || next == 'B' || next == 'C' || next == 'S')
+    if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z')
     {
-
-        if (next == 'S')
+        if (map[y][x] == 'S')
         {
             player->win = 1;
             *running = 0;
