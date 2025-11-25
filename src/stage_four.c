@@ -27,7 +27,7 @@ void setupStageFour(
     int *camera,
     char stage_map[LINE][COLUMN + 1]);
 
-void openTerminalFour(int terminals[], char terminal, SentenceModel sentences[], int *current_sentence_index);
+void openTerminalFour(int terminals[], char terminal, SentenceModel sentences[], int *current_sentence_index, Player *player);
 int open_terminal_model_four(char terminal);
 void resetIndexFour(int *item, int total);
 char movePlayerFour(MoveDirection direction, char **map, int *running, Player *player, char *lastChar);
@@ -103,7 +103,7 @@ int stage_four(char **allocated_map, Player *player)
                     player->win = 0;
                 }
 
-                openTerminalFour(terminals, requiredPos, sentencesFour, &current_sentence_index);
+                openTerminalFour(terminals, requiredPos, sentencesFour, &current_sentence_index, player);
                 printMapFour(allocated_map, player, terminals, &camera, sentencesFour, &current_sentence_index, currentCamera);
             }
 
@@ -132,7 +132,7 @@ int stage_four(char **allocated_map, Player *player)
     return 0;
 }
 
-void openTerminalFour(int terminals[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index)
+void openTerminalFour(int terminals[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index, Player *player)
 {
     int index = requiredTerminal - 'A';
 
@@ -142,6 +142,7 @@ void openTerminalFour(int terminals[], char requiredTerminal, SentenceModel sent
         if (value == sentences[*current_sentence_index].terminals[index])
         {
             terminals[index] = value;
+            player->score += 10;
         }
         else
         {
@@ -378,4 +379,5 @@ char movePlayerFour(MoveDirection direction, char **map, int *running, Player *p
     }
 
     return next;
+
 }
