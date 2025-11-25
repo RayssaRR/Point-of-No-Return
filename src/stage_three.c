@@ -111,7 +111,7 @@ int stage_three(char **allocated_map, Player *player) {
     int currentCamera = 0; 
     int terminals[NUM_TERMINALS] = {-1, -1, -1, -1};
 
-    char requiredPosition = '.'; /
+    char requiredPosition = '.'; 
     char lastChar = '.';
     int ch = 0;
     int lastCameraSwitch = 0; 
