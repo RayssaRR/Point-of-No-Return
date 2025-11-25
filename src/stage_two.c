@@ -74,7 +74,9 @@ char movePlayer_stageTwo(
     char **map,
     int *running,
     Player *player,
-    char *lastChar
+    char *lastChar,
+    int terminals[],
+    int *current_sentence_index
 ) {
     int x = player->x;
     int y = player->y;
@@ -125,8 +127,13 @@ char movePlayer_stageTwo(
 
     
     if (next == 'S') {
+      int isOpen =  terminals[0] == stage_two_sentences[*current_sentence_index].terminals[0] &&
+                    terminals[1] == stage_two_sentences[*current_sentence_index].terminals[1] &&
+                    terminals[2] == stage_two_sentences[*current_sentence_index].terminals[2];
+    
+      if (isOpen) {
         *running = 0;
-        player->win = 1;
+      }
     }
 
     return next;
@@ -178,10 +185,10 @@ int stage_two(char **allocated_map, Player *player) {
                 ch = readch();
 
                     //movimento do jogador
-                if (ch == 'w') requiredPosition = movePlayer_stageTwo(UP, allocated_map, &running, player, &lastChar);
-                else if (ch == 's') requiredPosition = movePlayer_stageTwo(DOWN, allocated_map, &running, player, &lastChar);
-                else if (ch == 'a') requiredPosition = movePlayer_stageTwo(LEFT, allocated_map, &running, player, &lastChar);
-                else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar);
+                if (ch == 'w') requiredPosition = movePlayer_stageTwo(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                else if (ch == 's') requiredPosition = movePlayer_stageTwo(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                else if (ch == 'a') requiredPosition = movePlayer_stageTwo(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 'l') { running = 0; player->win = 0; }
                
                openTerminalStageTwo(terminals, requiredPosition, stage_two_sentences, &current_sentence_index, player);
@@ -207,7 +214,7 @@ int stage_two(char **allocated_map, Player *player) {
             }
 
 
-            checkTimerStageTwo(player, stageTime, &running);
+            // checkTimerStageTwo(player, stageTime, &running);
 
 
             // detectar câmeras
@@ -443,31 +450,32 @@ void setupStageTwo(
     terminals[1] = -1;
     terminals[2] = -1;
 }
+
 void resetIndexStageTwo(int *current_sentence_index, int total_sentences) {
     *current_sentence_index = (*current_sentence_index + 1) % total_sentences;
     screenUpdate();
 }
 
-void checkTimerStageTwo (Player *player, int stageTime, int *running) {
-    // tempo passado desde timerInit
-    int elapsed = getTimeDiff();  
-    int remaining = stageTime - elapsed;  // tempo restante
+// void checkTimerStageTwo (Player *player, int stageTime, int *running) {
+//     // tempo passado desde timerInit
+//     int elapsed = getTimeDiff();  
+//     int remaining = stageTime - elapsed;  // tempo restante
 
-    if (remaining < 0) remaining = 0;
+//     if (remaining < 0) remaining = 0;
 
-    // mostra o timer na tela
-    screenGotoxy(MAXX - 15, MAXY - 12);
-    printf("Tempo: %d s", remaining / 1000);
+//     // mostra o timer na tela
+//     screenGotoxy(MAXX - 15, MAXY - 12);
+//     printf("Tempo: %d s", remaining / 1000);
 
-    // se o tempo acabou
-    if (remaining <= 0) {
-        *running = 0;     
-        player->win = 0;  
-        screenClear();
-        screenGotoxy(1,1);
-        printf("Tempo esgotado!\n");
-        screenUpdate();
-    }
-}
+//     // se o tempo acabou
+//     if (remaining <= 0) {
+//         *running = 0;     
+//         player->win = 0;  
+//         screenClear();
+//         screenGotoxy(1,1);
+//         printf("Tempo esgotado!\n");
+//         screenUpdate();
+//     }
+// }
 
 
