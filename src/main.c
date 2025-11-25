@@ -2,6 +2,8 @@
 #include "timer.h"
 #include "stage_one.h"
 #include "stage_two.h"
+#include "stage_three.h"
+#include "stage_four.h"
 #include "utils.h"
 
 void free_map_memory(char **map);
@@ -25,10 +27,10 @@ int main() {
     player.x = 1;
     player.y = 1;
 
-    stage_one(allocated_map, &player); // INICIA A FASE 1
-
-    stage_two(allocated_map, &player);//FASE 2
-
+    stage_one(allocated_map, &player);
+    stage_two(allocated_map, &player);
+    stage_three(allocated_map, &player);
+    stage_four(allocated_map, &player);
 
     //EXIT
 

@@ -6,11 +6,6 @@
 #include "screen.h"
 #include "keyboard.h"
 
-#define COLUMN 40
-#define LINE 19
-
-char lastChar = '.';
-
 void showInitialMenu(int *running, int *dbreak) {
     screenClear();
 
@@ -39,44 +34,4 @@ void showInitialMenu(int *running, int *dbreak) {
         }
     }
 }
-
-// char movePlayer(
-//   MoveDirection direction,
-//   char **map,
-//   int *running,
-//   Player *player
-// ) {
-
-//   int x = player->x;
-//   int y = player->y;
-
-//   if (direction == UP) {
-//     y = player->y - 1;
-//     x = player->x;
-//   } else if (direction == DOWN) {
-//     y = player->y + 1;
-//     x = player->x;
-//   } else if (direction == LEFT) {
-//     y = player->y;
-//     x = player->x - 1;
-//   } else if (direction == RIGHT) {
-//     y = player->y;
-//     x = player->x + 1;
-//   }
-
-//   if (map[y][x] == '.' || map[y][x] == 'S') {
-//     if (map[y][x] == 'S') {
-//       player->win = 1;
-//       *running = 0;
-//     }
-
-//     map[player->y][player->x] = '.';
-
-//     player->x = x;
-//     player->y = y;
-//     map[player->y][player->x] = 'O';
-//   }
-
-//   return map[y][x];
-// }
 
