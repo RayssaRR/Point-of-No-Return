@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "screen.h"
 #include "timer.h"
 #include "keyboard.h"
@@ -10,6 +11,7 @@ typedef struct {
   int terminals[3];
 } SentenceModel;
 
+void printStageOneIntro();
 void printMap(
   char **map,
   Player *player,
@@ -152,23 +154,32 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
 
 int open_terminal_model(char terminal) {
   int terminal_value = -1;
-  screenClear();
 
-  screenGotoxy(1, 1);
-  screenSetColor(BLACK, BLUE);
-  printf("Digite o valor do terminal %c:", terminal);
+    keyboardDestroy();
 
-  screenUpdate();
+    screenClear();
+    screenGotoxy(1,1);
+    screenSetColor(BLACK, BLUE);
+    printf("Digite o valor do terminal %c ", terminal);
+    fflush(stdout);
 
-  keyboardDestroy();
+    char ch;
+    do {
+        ch = getchar(); 
+    } while (ch != '0' && ch != '1');
 
-  screenGotoxy(1, 2);
-  scanf("%d", &terminal_value);
+    terminal_value = ch - '0';
 
-  keyboardInit();
-  screenUpdate();
+    printf("\n%d\n", terminal_value);
+    fflush(stdout);
 
-  return terminal_value;
+    // Espera um pouco para o jogador ver
+    getchar(); // lê o Enter
+
+    // Volta para o modo raw do jogo
+    keyboardInit();
+
+    return terminal_value;
 }
 
 void printMap(
@@ -252,9 +263,6 @@ void printMap(
         }
     }
     
-    screenGotoxy(MAXX - 15, MAXY - 19);
-    screenSetColor(BLACK, BLUE);
-    printf("Score: %.2f", player->score);
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Senha: %s", sentences[*current_sentence_index].sentence);
     screenGotoxy(MAXX - 15, MAXY - 17);
@@ -366,4 +374,24 @@ char movePlayer(
   }
 
   return map[y][x];
+}
+
+void printStageOneIntro() {
+    screenClear();
+    screenGotoxy((MAXX - 30) / 2, (MAXY - 30) / 2);
+    printf(" FASE 1\n\n");
+    printf(" Você deve hackear os terminais fornecendo os valores lógicos corretos.\n\n");
+    printf(" Use W/A/S/D para mover e L para sair.\n\n");
+    printf(" Pressione qualquer tecla para iniciar...\n\n");
+
+    keyboardInit();
+    screenUpdate();
+    int ch = readch();
+
+    while (1) {
+        ch = readch();
+        if (ch) break;
+    }
+
+    screenClear();
 }

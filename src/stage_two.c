@@ -63,7 +63,6 @@ void setupStageTwo(
 void openTerminalStageTwo(int terminals[], char terminal, StageTwoSentence stage_two_sentences[], int *current_sentence_index, Player *player);
 int open_terminal_modelStageTwo(char terminal);
 void resetIndexStageTwo(int *item, int total);
-void checkTimerStageTwo(Player *player, int stageTime, int *running);
 
 char movePlayer_stageTwo(
     MoveDirection direction,
@@ -72,7 +71,8 @@ char movePlayer_stageTwo(
     Player *player,
     char *lastChar,
     int terminals[],
-    int *current_sentence_index
+    int *current_sentence_index,
+    int *penalty
 ) {
     int x = player->x;
     int y = player->y;
@@ -95,7 +95,7 @@ char movePlayer_stageTwo(
     *lastChar = next;
 
     if (next == '^') {
-        player->score -= 5;
+        *penalty -= 5;
 
         stage_two_map[y][x] = '.';
         map[y][x] = '.';
@@ -137,7 +137,7 @@ char movePlayer_stageTwo(
 
 
 
-int stage_two(char **allocated_map, Player *player) {
+int stage_two(char **allocated_map, Player *player, int *penalty) {
 
     player->x = 1;
     player->y = 1;
@@ -180,11 +180,11 @@ int stage_two(char **allocated_map, Player *player) {
                 ch = readch();
 
                     //movimento do jogador
-                if (ch == 'w') requiredPosition = movePlayer_stageTwo(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
-                else if (ch == 's') requiredPosition = movePlayer_stageTwo(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
-                else if (ch == 'a') requiredPosition = movePlayer_stageTwo(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
-                else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
-                else if (ch == 'l') { running = 0; player->win = 0; }
+                if (ch == 'w') requiredPosition = movePlayer_stageTwo(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                else if (ch == 's') requiredPosition = movePlayer_stageTwo(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                else if (ch == 'a') requiredPosition = movePlayer_stageTwo(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                else if (ch == 'l') { running = 0; }
                
                openTerminalStageTwo(terminals, requiredPosition, stage_two_sentences, &current_sentence_index, player);
 
@@ -215,14 +215,10 @@ int stage_two(char **allocated_map, Player *player) {
             int caughtByZ = (stage_two_map[player->y][player->x] == 'z' && currentCamera == 3);
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ) {
-                player->score -= 7;
+                *penalty -= 7;
                 resetIndexStageTwo(&currentCamera, 4);
                 resetIndexStageTwo(&current_sentence_index, 3);
                 resetIndexStageTwo(terminals, 3);
-            }
-
-            if(player->score <0) {
-                player->score = 0;
             }
         }
 
@@ -241,7 +237,6 @@ if (index >= 0 && index < 3) {
 
     if (value == sentences[*current_sentence_index].terminals[index]) {
         terminals[index] = value;
-        player-> score += 10;
     } else {
         resetIndexStageTwo(current_sentence_index, 3);
         terminals[0] = -1;
@@ -377,9 +372,6 @@ void printMapStageTwo(
    
     screenSetColor(BLACK, BLUE);
 
-    screenGotoxy(MAXX - 15, MAXY - 19);
-    printf("Score: %.2f", player->score);
-
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Senha: %s", stage_two_sentences[*current_sentence_index].sentence);
 
@@ -420,6 +412,51 @@ void printMapStageTwo(
     } else {
         screenSetColor(BLUE, BLUE);
     }
+
+     int boxX = COLUMN + 20;   
+    int boxY = 13;
+
+    screenSetColor(BLACK, BLUE);
+
+    // borda superior
+    screenGotoxy(boxX, boxY);
+    printf("+------------------------------+");
+
+    // título
+    screenGotoxy(boxX, boxY + 1);
+    printf("| GUIA DO MAPA                |");
+
+    // linha 1
+    screenGotoxy(boxX, boxY + 2);
+    printf("| (o) Buraco  -> Reinicia     |");
+
+    // linha 2
+    screenGotoxy(boxX, boxY + 3);
+    printf("| (^) Espinho -> -5 pontos    |");
+
+    // linha 3
+    screenGotoxy(boxX, boxY + 4);
+    printf("| Cameras -> -7 se te ver     |");
+
+    // linha 4 (dica parte 1)
+    screenGotoxy(boxX, boxY + 5);
+    printf("| Dica: fique imóvel e a      |");
+
+    // linha 5 (dica parte 2)
+    screenGotoxy(boxX, boxY + 6);
+    printf("| magia da Pixie te protege   |");
+
+    // linha 6
+    screenGotoxy(boxX, boxY + 7);
+    printf("| A/B/C -> Digite 0 ou 1      |");
+
+    // linha 7
+    screenGotoxy(boxX, boxY + 8);
+    printf("| (S)  ->      Saida          |");
+
+    // borda inferior
+    screenGotoxy(boxX, boxY + 9);
+    printf("+------------------------------+");
 
     screenUpdate();
 }
