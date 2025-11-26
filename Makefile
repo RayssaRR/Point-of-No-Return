@@ -1,6 +1,7 @@
 # Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Werror -g -I$(INCLUDE_DIR)
+LIBS = -lm -lpthread -ldl
 
 #project name
 PROJ_NAME = point-of-no-return
@@ -18,7 +19,7 @@ OBJ_FILES = $(SRC_FILES:%.c=$(OBJ_DIR)/%.o)
 # Build target
 all: $(OBJ_DIR) $(OBJ_FILES)
 	@echo Creating $(BUILD_DIR)/$(PROJ_NAME)
-	@$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(PROJ_NAME) $(OBJ_FILES)
+	@$(CC) $(CFLAGS) -o $(BUILD_DIR)/$(PROJ_NAME) $(OBJ_FILES) $(LIBS)
 
 # Build directory
 $(BUILD_DIR):
