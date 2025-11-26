@@ -413,6 +413,51 @@ void printMapStageTwo(
         screenSetColor(BLUE, BLUE);
     }
 
+     int boxX = COLUMN + 20;   
+    int boxY = 13;
+
+    screenSetColor(BLACK, BLUE);
+
+    // borda superior
+    screenGotoxy(boxX, boxY);
+    printf("+------------------------------+");
+
+    // título
+    screenGotoxy(boxX, boxY + 1);
+    printf("| GUIA DO MAPA                |");
+
+    // linha 1
+    screenGotoxy(boxX, boxY + 2);
+    printf("| (o) Buraco  -> Reinicia     |");
+
+    // linha 2
+    screenGotoxy(boxX, boxY + 3);
+    printf("| (^) Espinho -> -5 pontos    |");
+
+    // linha 3
+    screenGotoxy(boxX, boxY + 4);
+    printf("| Cameras -> -7 se te ver     |");
+
+    // linha 4 (dica parte 1)
+    screenGotoxy(boxX, boxY + 5);
+    printf("| Dica: fique imóvel e a      |");
+
+    // linha 5 (dica parte 2)
+    screenGotoxy(boxX, boxY + 6);
+    printf("| magia da Pixie te protege   |");
+
+    // linha 6
+    screenGotoxy(boxX, boxY + 7);
+    printf("| A/B/C -> Digite 0 ou 1      |");
+
+    // linha 7
+    screenGotoxy(boxX, boxY + 8);
+    printf("| (S)  ->      Saida          |");
+
+    // borda inferior
+    screenGotoxy(boxX, boxY + 9);
+    printf("+------------------------------+");
+
     screenUpdate();
 }
 void setupStageTwo(
