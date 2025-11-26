@@ -43,8 +43,9 @@ int main() {
     time_t fim = time(NULL); // Finaliza o cronometro
     int tempo_jogo = (int) difftime(fim, inicio);
 
-    if (tempo_jogo + penalty < 0) tempo_jogo = 0;
-    else tempo_jogo = tempo_jogo + penalty;
+    tempo_jogo += penalty;
+    if (tempo_jogo < 0) tempo_jogo = 0;
+
 
     screenClear();
     screenGotoxy(1,1);
