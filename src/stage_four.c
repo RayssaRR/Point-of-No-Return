@@ -34,23 +34,23 @@ char movePlayerFour(MoveDirection direction, char **map, int *running, Player *p
 
 char stage_four_map[LINE][COLUMN + 1] = {
     "########################################",
-    "#@..............#######................#",
-    "###.###################.################",
-    "#...#........zzzz.......#.............##",
+    "#@..............#######.........o......#",
+    "###.X##################.X###############",
+    "#...#........zzzz...o...#.............##",
     "#.###.#######.#z#######.#############.##",
-    "#.#...#.....#.#zzzz.....#.#.........#..#",
+    "#.#...#..^..#.#zzzz.....#.#.........#..#",
     "#w#.###.###C#.#z#######.#.#.#####.#.####",
-    "#www#...#.###.#z#.....#.#.#.#.....#...##",
-    "#w#.#.###.#.#.#.#.###.#.#.#.#.###.######",
-    "#.#.#.#...#x#.#.#.#.#.#...#.#.#.....#.##",
+    "#www#...#.###.#z#..^..#.#.#.#.....#...##",
+    "#w#.#.###.#.#.#.#.###.#.#...#.##W.######",
+    "#oX.#.#...#x#.#.#.#.#.#...#.#.#.....#.##",
     "#.#.#.#.###x#.#.#...#...###.#.#######..#",
-    "#.#.#.#..xxxxx..###.#.###.#..........#.#",
-    "#.#.#.#.#.###x###.#.#.#.#.#.########...#",
-    "#.#.#...#.#..x#B#.#.#.#.#.#..........#.#",
-    "#.#.#.#.#.#.###.#.#.#.#.#.#.#######.####",
-    "#.#.#.#.#.#.#...#.#y#.#.#.#.......#.zzz#",
-    "#.#.#.#.#.#.#.#####y#y#.############z###",
-    "#.#.#.#S#.#.#...yyyyyy#...........zzz.A#",
+    "#.#.#.#..xxxxx..###.#.###.#.....^....#.#",
+    "#.#.#.#.Y.###x###.#.#.#.#.#.########...#",
+    "#.#.#...#.#..x#B#...#.#.#.#..........#.#",
+    "#.#.#.#.#.#.###.#.#.#.#.#.#.X######.####",
+    "#.#.#.#.#.#.#...#.#y..#.#^#...o#....zzz#",
+    "#.#.#.#.#.#.#.###.#####.############z###",
+    "#.#.#.#S#.#.#...yyyyyy#^..........zzz.A#",
     "########################################"};
 
 SentenceModel sentencesFour[4] = {
@@ -310,6 +310,8 @@ void printMapFour(
         printf("Terminal C: -- ");
     }
 
+    screenSetColor(BLACK, BLUE);
+
     if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
         terminals[1] == sentences[*current_sentence_index].terminals[1] &&
         terminals[2] == sentences[*current_sentence_index].terminals[2])
@@ -320,6 +322,32 @@ void printMapFour(
     {
         screenSetColor(BLUE, BLUE);
     }
+
+    int boxX = COLUMN + 20;
+    int boxY = 13;
+
+    screenSetColor(BLACK, BLUE);
+
+    screenGotoxy(boxX, boxY);
+    printf("+------------------------------+");
+    screenGotoxy(boxX, boxY + 1);
+    printf("| GUIA DO MAPA                |");
+    screenGotoxy(boxX, boxY + 2);
+    printf("| (o) Buraco  -> Reinicia     |");
+    screenGotoxy(boxX, boxY + 3);
+    printf("| (^) Espinho -> -5 pontos    |");
+    screenGotoxy(boxX, boxY + 4);
+    printf("| Cameras -> -7 se te ver     |");
+    screenGotoxy(boxX, boxY + 5);
+    printf("| Dica: fique imóvel e a      |");
+    screenGotoxy(boxX, boxY + 6);
+    printf("| magia da Pixie te protege   |");
+    screenGotoxy(boxX, boxY + 7);
+    printf("| A/B/C -> Digite 0 ou 1      |");
+    screenGotoxy(boxX, boxY + 8);
+    printf("| (S)  ->      Saida          |");
+    screenGotoxy(boxX, boxY + 9);
+    printf("+------------------------------+");
 
     screenUpdate();
 }
@@ -363,6 +391,20 @@ char movePlayerFour(MoveDirection direction, char **map, int *running, Player *p
 
     if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z')
     {
+        if (next == '^')
+        {
+            player->score -= 5;
+        }
+
+        if (next == 'o')
+        {
+            map[player->y][player->x] = stage_four_map[player->y][player->x];
+            player->x = 1;
+            player->y = 1;
+            map[player->y][player->x] = '@';
+            return next;
+        }
+
         if (map[y][x] == 'S')
         {
             player->win = 1;
@@ -379,5 +421,4 @@ char movePlayerFour(MoveDirection direction, char **map, int *running, Player *p
     }
 
     return next;
-
 }
