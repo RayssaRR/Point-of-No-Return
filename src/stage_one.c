@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "miniaudio.h"
+#include "sounds.h"
 #include "screen.h"
 #include "timer.h"
 #include "keyboard.h"
@@ -41,6 +43,16 @@ char movePlayer(
   int *current_sentence_index
 );
 
+void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
+{
+    // O callback deve ser definido, mas não precisamos de lógica aqui para a reprodução simples.
+    // O ma_data_source_read_pcm_frames cuidará da leitura dos dados.
+    (void)pDevice;
+    (void)pOutput;
+    (void)pInput;
+    (void)frameCount;
+}
+
 char stage_one_map[LINE][COLUMN + 1] = {
     "########################################",
     "#O.....................................#",
@@ -69,7 +81,17 @@ SentenceModel sentences[3] = {
   {"A ∧ ¬B ∧ C", {1, 0, 1}}
 };
 
+ma_engine engine;
+
 int stage_one(char **allocated_map, Player *player) {
+  ma_result result;
+
+  result = ma_engine_init(NULL, &engine);
+  if (result != MA_SUCCESS) {
+      printf("Erro ao inicializar o motor de áudio (miniaudio).\n");
+      return -1;
+  }
+
   player->x = 1;
   player->y = 1;
 
@@ -123,6 +145,7 @@ int stage_one(char **allocated_map, Player *player) {
       int caughtByY = (stage_one_map[player->y][player->x] == 'y' && currentCamera == 2);
       int caughtByZ = (stage_one_map[player->y][player->x] == 'z' && currentCamera == 3);
       if (caughtByW || caughtByX || caughtByY || caughtByZ) {
+        caught_by_cam_sound(&engine);
         resetIndex(&currentCamera, 4);
         resetIndex(&current_sentence_index, 2);
         printMap(allocated_map, player, terminals, &camera, sentences, &current_sentence_index, currentCamera);
@@ -141,18 +164,27 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
     if (index >= 0 && index < 3) { 
         int value = open_terminal_model(requiredTerminal);
         if (value == sentences[*current_sentence_index].terminals[index]) {
-            terminals[index] = value;
+          terminal_correct_value_sound(&engine);
+          terminals[index] = value;
         } else {
+          terminal_wrong_value_sound(&engine);
           resetIndex(current_sentence_index, 2);
           terminals[0] = -1;
           terminals[1] = -1;
           terminals[2] = -1;
           screenSetColor(RED, RED);
         }
+
+        if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
+            terminals[1] == sentences[*current_sentence_index].terminals[1] &&
+            terminals[2] == sentences[*current_sentence_index].terminals[2]) {
+          pass_stage_sound(&engine);
+        }
     }
 }
 
 int open_terminal_model(char terminal) {
+  open_terminal_sound(&engine);
   int terminal_value = -1;
 
     keyboardDestroy();
@@ -357,6 +389,7 @@ char movePlayer(
   }
 
   if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z') {
+    walk_sound(&engine);
     int isOpen =  terminals[0] == sentences[*current_sentence_index].terminals[0] &&
                   terminals[1] == sentences[*current_sentence_index].terminals[1] &&
                   terminals[2] == sentences[*current_sentence_index].terminals[2];

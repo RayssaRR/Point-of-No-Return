@@ -1,6 +1,8 @@
+#define MINIAUDIO_IMPLEMENTATION
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include "miniaudio.h"
 #include "screen.h"
 #include "timer.h"
 #include "stage_one.h"
@@ -37,7 +39,7 @@ int main() {
 
     stage_one(allocated_map, &player);
     stage_two(allocated_map, &player, &penalty);
-    stage_three(allocated_map, &player);
+    stage_three(allocated_map, &player, &penalty);
     stage_four(allocated_map, &player, &penalty);
 
     time_t fim = time(NULL); // Finaliza o cronometro

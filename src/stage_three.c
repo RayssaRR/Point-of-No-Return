@@ -31,11 +31,11 @@ void openTerminalThree(int terminals[], char terminal, SentenceModel sentences[]
 int open_terminal_model_Three(char terminal);
 void resetIndexThree(int *item, int total);
 char movePlayerThree(MoveDirection direction, char **map, int *running, Player *player, char *lastChar, int terminals[],
-    int *current_sentence_index);
+                     int *current_sentence_index, int *penalty);
 
 char stage_Three_map[LINE][COLUMN + 1] = {
     "########################################",
-    "#O..............#######................#",
+    "#O........o.....#######................#",
     "###.###################.################",
     "#...#........zzzz.......#.............##",
     "#.###.#######.#z#######.#############.##",
@@ -43,7 +43,7 @@ char stage_Three_map[LINE][COLUMN + 1] = {
     "#w#.###.###C#.#z#######.#.#.###.#.#.####",
     "#www#...#.###.#z#.....#.#.#.#.....#...##",
     "#w#.#.###.#.#.#.#.###.#.#.#.#.###.######",
-    "#.#.#.#...#x#.#.#.#.#.#...#.#.#.....#.##",
+    "#o#.#...#x#.#.#.#.#.#...#.#.#......#..##",
     "#.#.#.#.###x#.#.#...#...###.#.#######..#",
     "#.#.#.#..xxxxx..###.#.###.#..........#.#",
     "#.#.#.#.#.###x###.#.#.#.#.#.########...#",
@@ -59,7 +59,7 @@ SentenceModel sentencesThree[4] = {
     {"¬A ∨ (B ∧ C)", {0, 1, 1}},
     {"A ⊕ C", {1, 0, 1}}};
 
-int stage_three(char **allocated_map, Player *player)
+int stage_three(char **allocated_map, Player *player, int *penalty)
 {
     player->x = 1;
     player->y = 1;
@@ -90,13 +90,13 @@ int stage_three(char **allocated_map, Player *player)
                 ch = readch();
 
                 if (ch == 'w')
-                    requiredPos = movePlayerThree(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                    requiredPos = movePlayerThree(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
                 else if (ch == 's')
-                    requiredPos = movePlayerThree(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                    requiredPos = movePlayerThree(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
                 else if (ch == 'a')
-                    requiredPos = movePlayerThree(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                    requiredPos = movePlayerThree(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
                 else if (ch == 'd')
-                    requiredPos = movePlayerThree(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                    requiredPos = movePlayerThree(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
                 else if (ch == 'l')
                 {
                     running = 0;
@@ -155,33 +155,34 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
 
 int open_terminal_model_Three(char terminal)
 {
-  int terminal_value = -1;
+    int terminal_value = -1;
 
-  keyboardDestroy();
+    keyboardDestroy();
 
-  screenClear();
-  screenGotoxy(1,1);
-  screenSetColor(BLACK, BLUE);
-  printf("Digite o valor do terminal %c ", terminal);
-  fflush(stdout);
+    screenClear();
+    screenGotoxy(1, 1);
+    screenSetColor(BLACK, BLUE);
+    printf("Digite o valor do terminal %c ", terminal);
+    fflush(stdout);
 
-  char ch;
-  do {
-      ch = getchar(); 
-  } while (ch != '0' && ch != '1');
+    char ch;
+    do
+    {
+        ch = getchar();
+    } while (ch != '0' && ch != '1');
 
-  terminal_value = ch - '0';
+    terminal_value = ch - '0';
 
-  printf("\n%d\n", terminal_value);
-  fflush(stdout);
+    printf("\n%d\n", terminal_value);
+    fflush(stdout);
 
-  // Espera um pouco para o jogador ver
-  getchar(); // lê o Enter
+    // Espera um pouco para o jogador ver
+    getchar(); // lê o Enter
 
-  // Volta para o modo raw do jogo
-  keyboardInit();
+    // Volta para o modo raw do jogo
+    keyboardInit();
 
-  return terminal_value;
+    return terminal_value;
 }
 
 void printMapThree(
@@ -245,7 +246,7 @@ void printMapThree(
             }
             else if (ch == 'o')
             {
-                screenSetColor(BLACK, WHITE);
+                screenSetColor(WHITE, BLACK);
             }
 
             else if (ch == 'W' || ch == 'X' || ch == 'Y' || ch == 'Z')
@@ -329,6 +330,41 @@ void printMapThree(
         screenSetColor(BLUE, BLUE);
     }
 
+    int boxX = COLUMN + 20;
+    int boxY = 13;
+
+    screenSetColor(BLACK, BLUE);
+
+    screenGotoxy(boxX, boxY);
+    printf("+------------------------------+");
+
+    screenGotoxy(boxX, boxY + 1);
+    printf("| GUIA DO MAPA                |");
+
+    screenGotoxy(boxX, boxY + 2);
+    printf("| (o) Buraco -> Reinicia      |");
+
+    screenGotoxy(boxX, boxY + 3);
+    printf("| (^) Espinho -> -5 pontos    |");
+
+    screenGotoxy(boxX, boxY + 4);
+    printf("| Cameras -> -7 se te ver     |");
+
+    screenGotoxy(boxX, boxY + 5);
+    printf("| Dica: fique imóvel e a      |");
+
+    screenGotoxy(boxX, boxY + 6);
+    printf("| magia da Pixie te protege   |");
+
+    screenGotoxy(boxX, boxY + 7);
+    printf("| A/B/C -> Digite 0 ou 1      |");
+
+    screenGotoxy(boxX, boxY + 8);
+    printf("| (S) -> Saida                |");
+
+    screenGotoxy(boxX, boxY + 9);
+    printf("+------------------------------+");
+
     screenUpdate();
 }
 
@@ -354,7 +390,7 @@ void resetIndexThree(int *idx, int total)
 }
 
 char movePlayerThree(MoveDirection direction, char **map, int *running, Player *player, char *lastChar, int terminals[],
-    int *current_sentence_index)
+                     int *current_sentence_index, int *penalty)
 {
     int x = player->x;
     int y = player->y;
@@ -373,15 +409,42 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
     if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z')
     {
 
-      if (map[y][x] == 'S') {
-        int isOpen =  terminals[0] == sentencesThree[*current_sentence_index].terminals[0] &&
-                      terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
-                      terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
-      
-        if (isOpen) {
-          *running = 0;
+        if (next == '^')
+        {
+            *penalty -= 5;
+
+            stage_Three_map[y][x] = '.';
+            map[y][x] = '.';
+
+            player->x = x;
+            player->y = y;
+            map[y][x] = 'O';
+
+            return next;
         }
-      }
+
+        if (next == 'o')
+        {
+            map[player->y][player->x] = stage_Three_map[player->y][player->x];
+
+            player->x = 1;
+            player->y = 1;
+
+            map[player->y][player->x] = 'O';
+            return next;
+        }
+
+        if (map[y][x] == 'S')
+        {
+            int isOpen = terminals[0] == sentencesThree[*current_sentence_index].terminals[0] &&
+                         terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
+                         terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
+
+            if (isOpen)
+            {
+                *running = 0;
+            }
+        }
 
         *lastChar = '.';
         map[player->y][player->x] = *lastChar;
@@ -393,5 +456,4 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
     }
 
     return next;
-
 }
