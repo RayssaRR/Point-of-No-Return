@@ -35,12 +35,12 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
 
 char stage_Three_map[LINE][COLUMN + 1] = {
     "########################################",
-    "#@..............#######................#",
+    "#O..............#######................#",
     "###.###################.################",
     "#...#........zzzz.......#.............##",
     "#.###.#######.#z#######.#############.##",
-    "#.#...#.....#.#zzzz.....#.#.........#..#",
-    "#w#.###.###C#.#z#######.#.#.#####.#.####",
+    "#.#...#.....#.#zzzz.................#..#",
+    "#w#.###.###C#.#z#######.#.#.###.#.#.####",
     "#www#...#.###.#z#.....#.#.#.#.....#...##",
     "#w#.#.###.#.#.#.#.###.#.#.#.#.###.######",
     "#.#.#.#...#x#.#.#.#.#.#...#.#.#.....#.##",
@@ -155,19 +155,33 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
 
 int open_terminal_model_Three(char terminal)
 {
-    int v;
-    screenClear();
-    screenGotoxy(1, 1);
-    screenSetColor(BLACK, BLUE);
-    printf("Digite o valor do terminal %c:", terminal);
-    screenUpdate();
+  int terminal_value = -1;
 
-    keyboardDestroy();
-    screenGotoxy(1, 2);
-    scanf("%d", &v);
+  keyboardDestroy();
 
-    keyboardInit();
-    return v;
+  screenClear();
+  screenGotoxy(1,1);
+  screenSetColor(BLACK, BLUE);
+  printf("Digite o valor do terminal %c ", terminal);
+  fflush(stdout);
+
+  char ch;
+  do {
+      ch = getchar(); 
+  } while (ch != '0' && ch != '1');
+
+  terminal_value = ch - '0';
+
+  printf("\n%d\n", terminal_value);
+  fflush(stdout);
+
+  // Espera um pouco para o jogador ver
+  getchar(); // lê o Enter
+
+  // Volta para o modo raw do jogo
+  keyboardInit();
+
+  return terminal_value;
 }
 
 void printMapThree(
@@ -192,17 +206,13 @@ void printMapThree(
         {
             char ch = map[y][x];
 
-            if (ch == '@')
+            if (ch == 'O')
             {
                 screenSetColor(GREEN, BLACK);
             }
             else if (ch == '#')
             {
                 screenSetColor(BLUE, BLUE);
-            }
-            else if (ch == 'O')
-            {
-                screenSetColor(GREEN, BLACK);
             }
             else if (ch == 'S')
             {
@@ -267,9 +277,7 @@ void printMapThree(
         }
     }
 
-    screenGotoxy(MAXX - 15, MAXY - 19);
     screenSetColor(BLACK, BLUE);
-    printf("Score: %.2f", player->score);
 
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Sentença: %s", sentences[*current_sentence_index].sentence);
@@ -381,7 +389,7 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
         player->x = x;
         player->y = y;
 
-        map[y][x] = '@';
+        map[y][x] = 'O';
     }
 
     return next;

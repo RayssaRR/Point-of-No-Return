@@ -228,7 +228,6 @@ int stage_four(char **allocated_map, Player *player, int *penalty) {
             }
 
             if (player_pos_char == 'F') {
-                *penalty = 0; 
                 player->x = 1; 
                 player->y = 1; 
                 resetIndexStageFour(&current_sentence_index, NUM_SENTENCES);
