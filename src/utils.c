@@ -35,3 +35,8 @@ void showInitialMenu(int *running, int *dbreak) {
     }
 }
 
+void inputUsername(char username[]) {
+    screenClear();
+    printf("\nDigite o seu nome: \n");
+    scanf("%s", username);
+}
