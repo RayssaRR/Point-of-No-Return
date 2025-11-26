@@ -34,7 +34,9 @@ char movePlayer(
   char **map,
   int *running,
   Player *player,
-  char *lastChar
+  char *lastChar,
+  int terminals[],
+  int *current_sentence_index
 );
 
 char stage_one_map[LINE][COLUMN + 1] = {
@@ -92,13 +94,13 @@ int stage_one(char **allocated_map, Player *player) {
         ch = readch();
 
         if (ch == 'w') {
-            requiredPosition = movePlayer(UP, allocated_map, &running, player, &lastChar);
+            requiredPosition = movePlayer(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
         } else if (ch == 's') {
-            requiredPosition = movePlayer(DOWN, allocated_map, &running, player, &lastChar);
+            requiredPosition = movePlayer(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
         } else if (ch == 'a') {
-            requiredPosition = movePlayer(LEFT, allocated_map, &running, player, &lastChar);
+            requiredPosition = movePlayer(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
         } else if (ch == 'd') {
-            requiredPosition = movePlayer(RIGHT, allocated_map, &running, player, &lastChar);
+            requiredPosition = movePlayer(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
         } else if (ch == 'l') {
             running = 0;
             player->win = 0;
@@ -323,7 +325,9 @@ char movePlayer(
   char **map,
   int *running,
   Player *player,
-  char *lastChar
+  char *lastChar,
+  int terminals[],
+  int *current_sentence_index
 ) {
 
   int x = player->x;
@@ -344,8 +348,11 @@ char movePlayer(
   }
 
   if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z') {
-    if (map[y][x] == 'S') {
-      player->win = 1;
+    int isOpen =  terminals[0] == sentences[*current_sentence_index].terminals[0] &&
+                  terminals[1] == sentences[*current_sentence_index].terminals[1] &&
+                  terminals[2] == sentences[*current_sentence_index].terminals[2];
+    
+    if (map[y][x] == 'S' && isOpen) {
       *running = 0;
     }
 
