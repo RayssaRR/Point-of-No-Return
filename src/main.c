@@ -37,7 +37,7 @@ int main() {
 
     stage_one(allocated_map, &player);
     stage_two(allocated_map, &player, &penalty);
-    stage_three(allocated_map, &player);
+    stage_three(allocated_map, &player, &penalty);
     stage_four(allocated_map, &player, &penalty);
 
     time_t fim = time(NULL); // Finaliza o cronometro
