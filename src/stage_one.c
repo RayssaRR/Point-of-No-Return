@@ -264,6 +264,7 @@ void printMap(
     }
     
     screenGotoxy(MAXX - 15, MAXY - 18);
+    screenSetColor(BLACK, GREEN)
     printf("Senha: %s", sentences[*current_sentence_index].sentence);
     screenGotoxy(MAXX - 15, MAXY - 17);
 
