@@ -82,7 +82,7 @@ char movePlayer_stageFour(
 );
 
 
-int stage_four(char **allocated_map, Player *player) {
+int stage_four(char **allocated_map, Player *player, int *penalty) {
     const int ROBOT_R_FIXED_X = 29; 
     const int ROBOT_R_START_Y = 3; 
     const int ROBOT_R_END_Y = 5;   
@@ -200,7 +200,7 @@ int stage_four(char **allocated_map, Player *player) {
             char player_pos_char = stage_Four_map_template[player->y][player->x];
 
             if ((player->x == robot_r_x && player->y == robot_r_y) || (player->x == robot_g_x && player->y == robot_g_y)) {
-                player->score -= 20;
+                *penalty -= 20;
                 player->x = 1; 
                 player->y = 1; 
                 resetIndexStageFour(&current_sentence_index, NUM_SENTENCES);
@@ -212,7 +212,7 @@ int stage_four(char **allocated_map, Player *player) {
             int caughtByFixedUnit = (player_pos_char == 'W' || player_pos_char == 'X' || player_pos_char == 'Y' || player_pos_char == 'Z');
 
             if (caughtByProjection || caughtByFixedUnit) {
-                player->score -= 7;
+                *penalty -= 7;
                 
                 player->x = 1;
                 player->y = 1;
@@ -228,14 +228,12 @@ int stage_four(char **allocated_map, Player *player) {
             }
 
             if (player_pos_char == 'F') {
-                player->score = 0; 
+                *penalty = 0; 
                 player->x = 1; 
                 player->y = 1; 
                 resetIndexStageFour(&current_sentence_index, NUM_SENTENCES);
                 for(int i = 0; i < NUM_TERMINALS; i++) terminals[i] = -1;
             }
-
-            if (player->score < 0) { player->score = 0; }
         }
 
         if (!running) break;
@@ -348,8 +346,6 @@ void printMapStageFour(
     }
 
     screenSetColor(BLACK, BLUE);
-    screenGotoxy(MAXX - 15, MAXY - 19);
-    printf("Score: %.2f", player->score);
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Senha: %s", sentences[*current_sentence_index].sentence);
 
@@ -449,7 +445,6 @@ StageFourSentence sentences[], int *current_sentence_index, Player *player) {
 
         if (value == sentences[*current_sentence_index].terminals[index]) {
             terminals[index] = value;
-            player-> score += 10;
         } else {
             resetIndexStageFour(current_sentence_index, NUM_SENTENCES);
             for(int i = 0; i < NUM_TERMINALS; i++) terminals[i] = -1;
