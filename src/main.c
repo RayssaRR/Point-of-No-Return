@@ -9,7 +9,6 @@
 #include "stage_one.h"
 #include "stage_two.h"
 #include "stage_three.h"
-#include "stage_four.h"
 #include "utils.h"
 
 void free_map_memory(char **map);
@@ -76,9 +75,6 @@ int main() {
   dialogue_two();
 
   stage_three(allocated_map, &player);
-  dialogue_three();
-
-  stage_four(allocated_map, &player);
 
   dialogue_final();
   ma_sound_stop(&stage_noise);
