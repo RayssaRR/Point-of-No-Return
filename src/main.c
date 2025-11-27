@@ -1,6 +1,8 @@
+#define MINIAUDIO_IMPLEMENTATION
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include "miniaudio.h"
 #include "screen.h"
 #include "timer.h"
 #include "stage_one.h"
