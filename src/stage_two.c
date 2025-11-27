@@ -232,7 +232,6 @@ int stage_two(char **allocated_map, Player *player) {
             int caughtByZ = (stage_two_map[player->y][player->x] == 'z' && currentCamera == 3);
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ) {
-                updateScore(player, -5);
                 caught_by_cam_sound(&engine_StageTwo);
                 resetIndexStageTwo(&currentCamera, 4);
                 resetIndexStageTwo(&current_sentence_index, 3);
