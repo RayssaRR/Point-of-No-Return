@@ -58,8 +58,8 @@ char stage_Three_map[LINE][COLUMN + 1] = {
 
 SentenceModel sentencesThree[4] = {
     {"(A ∧ B) → C", {1, 1, 0}},
-    {"¬A ∨ (B ∧ C)", {0, 1, 1}},
-    {"¬A ∧ (B ∨ C)", {0, 1, 0}}};
+    {"¬(¬A) ∧ (B ∧ C)", {0, 1, 1}},
+    {"¬A ∧ (B ∧ C)", {1, 1, 1}}};
 
 ma_engine engineStageThree;
 

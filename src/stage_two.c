@@ -39,9 +39,9 @@ char stage_two_map[LINE][COLUMN + 1] = {
 };
 
 StageTwoSentence stage_two_sentences[3] = {
-    {"(A ∧ ¬B) ∧ ¬C", {1,0,0}},
-    {"(A ∧ ¬B) ∧ ¬C", {1,0,0}},
-    {"(A ∧ ¬B) ∧ ¬C", {1,0,0}}
+    {"(A ∧ ¬(¬B)) ∧ ¬C", {1,0,1}},
+    {"(A ∧ ¬B) ∧ ¬(¬C)", {1,1,0}},
+    {"(A ∧ ¬B) ∧ ¬C", {1,1,1}}
 };
 
 ma_engine engine_StageTwo;

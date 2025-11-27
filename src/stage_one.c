@@ -74,8 +74,8 @@ char stage_one_map[LINE][COLUMN + 1] = {
 
 SentenceModel sentences[3] = {
     {"A ∧ B ∧ C", {1, 1, 1}},
-    {"A ∧ B ∧ ¬ C", {1, 1, 0}},
-    {"A ∧ ¬B ∧ C", {1, 0, 1}}};
+    {"A ∧ B ∧ ¬(¬C)", {1, 1, 0}},
+    {"A ∧ ¬(¬B) ∧ ¬C", {1, 0, 1}}};
 
 ma_engine engine;
 
