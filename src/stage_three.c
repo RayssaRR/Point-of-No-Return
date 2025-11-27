@@ -33,7 +33,7 @@ void openTerminalThree(int terminals[], char terminal, SentenceModel sentences[]
 int open_terminal_model_Three(char terminal);
 void resetIndexThree(int *item, int total);
 char movePlayerThree(MoveDirection direction, char **map, int *running, Player *player, char *lastChar, int terminals[],
-                     int *current_sentence_index, int *penalty);
+                     int *current_sentence_index);
 
 char stage_Three_map[LINE][COLUMN + 1] = {
     "########################################",
@@ -63,7 +63,7 @@ SentenceModel sentencesThree[4] = {
 
 ma_engine engineStageThree;
 
-int stage_three(char **allocated_map, Player *player, int *penalty)
+int stage_three(char **allocated_map, Player *player)
 {
     ma_result result;
 
@@ -103,17 +103,16 @@ int stage_three(char **allocated_map, Player *player, int *penalty)
                 ch = readch();
 
                 if (ch == 'w')
-                    requiredPos = movePlayerThree(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                    requiredPos = movePlayerThree(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 's')
-                    requiredPos = movePlayerThree(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                    requiredPos = movePlayerThree(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 'a')
-                    requiredPos = movePlayerThree(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                    requiredPos = movePlayerThree(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 'd')
-                    requiredPos = movePlayerThree(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                    requiredPos = movePlayerThree(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 'l')
                 {
                     running = 0;
-                    player->win = 0;
                 }
 
                 openTerminalThree(terminals, requiredPos, sentencesThree, &current_sentence_index, player);
@@ -133,6 +132,7 @@ int stage_three(char **allocated_map, Player *player, int *penalty)
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ)
             {
+                player->score -= 5;
                 caught_by_cam_sound(&engineStageThree);
                 resetIndexThree(&currentCamera, 4);
                 resetIndexThree(&current_sentence_index, 2);
@@ -166,6 +166,7 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
             resetIndexThree(current_sentence_index, 2);
             terminals[0] = terminals[1] = terminals[2] = -1;
             screenSetColor(RED, RED);
+            player->score -= 5;
         }
 
         if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
@@ -304,6 +305,8 @@ void printMapThree(
     }
 
     screenSetColor(BLACK, BLUE);
+    screenGotoxy(MAXX - 15, MAXY - 19);
+    printf("Pontos: %d", player->score);
 
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Sentença: %s", sentences[*current_sentence_index].sentence);
@@ -396,7 +399,6 @@ void setupStageThree(
     int *camera,
     char stage_map[LINE][COLUMN + 1])
 {
-    player->win = 0;
 
     for (int i = 0; i < LINE; i++)
         strcpy(allocated_map[i], stage_map[i]);
@@ -411,7 +413,7 @@ void resetIndexThree(int *idx, int total)
 }
 
 char movePlayerThree(MoveDirection direction, char **map, int *running, Player *player, char *lastChar, int terminals[],
-                     int *current_sentence_index, int *penalty)
+                     int *current_sentence_index)
 {
     int x = player->x;
     int y = player->y;
@@ -434,12 +436,20 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
                      terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
                      terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
 
-        (void)isOpen;
+        if (map[y][x] == 'S') {
+        if (isOpen) {
+            pass_stage_sound(&engineStageThree);
+            *running = 0;
+          } else {
+            door_locked_sound(&engineStageThree);
+            return next;
+          }
+        }
 
         if (next == '^')
         {
             thorns_sound(&engineStageThree);
-            *penalty -= 5;
+            player->score -= 5;
 
             stage_Three_map[y][x] = '.';
             map[y][x] = '.';
@@ -461,7 +471,6 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
 
         if (map[y][x] == 'S')
         {
-            player->win = 1;
             *running = 0;
         }
 

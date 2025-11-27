@@ -3,8 +3,7 @@
 
 typedef struct {
     char name[100];
-    double score;
-    int win;
+    int score;
     int x;
     int y;
 } Player;

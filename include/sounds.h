@@ -12,5 +12,7 @@ void pass_stage_sound(ma_engine *engine);
 void caught_by_cam_sound(ma_engine *engine);
 void falling_sound(ma_engine *engine);
 void thorns_sound(ma_engine *engine);
+void door_locked_sound(ma_engine *engine);
+void door_unlocked_sound(ma_engine *engine);
 
 #endif

@@ -29,7 +29,7 @@ void setupStage(
     int terminals[],
     int *camera,
     char stage_map[LINE][COLUMN + 1]);
-void openTerminal(int terminals[], char terminal, SentenceModel sentences[], int *current_sentence_index);
+void openTerminal(int terminals[], char terminal, SentenceModel sentences[], int *current_sentence_index, Player *player);
 int open_terminal_model(char terminal);
 void resetIndex(int *item, int total);
 char movePlayer(
@@ -137,10 +137,9 @@ int stage_one(char **allocated_map, Player *player)
         else if (ch == 'l')
         {
           running = 0;
-          player->win = 0;
         }
 
-        openTerminal(terminals, requiredPosition, sentences, &current_sentence_index);
+        openTerminal(terminals, requiredPosition, sentences, &current_sentence_index, player);
         printMap(allocated_map, player, terminals, &camera, sentences, &current_sentence_index, currentCamera);
       }
 
@@ -156,6 +155,7 @@ int stage_one(char **allocated_map, Player *player)
       int caughtByZ = (stage_one_map[player->y][player->x] == 'z' && currentCamera == 3);
       if (caughtByW || caughtByX || caughtByY || caughtByZ)
       {
+        player->score -= 5;
         caught_by_cam_sound(&engine);
         resetIndex(&currentCamera, 4);
         resetIndex(&current_sentence_index, 2);
@@ -170,7 +170,7 @@ int stage_one(char **allocated_map, Player *player)
   return 0;
 }
 
-void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index)
+void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index, Player *player)
 {
   int index = requiredTerminal - 'A';
 
@@ -181,6 +181,7 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
     {
       terminal_correct_value_sound(&engine);
       terminals[index] = value;
+      player->score += 10;
     }
     else
     {
@@ -190,13 +191,14 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
       terminals[1] = -1;
       terminals[2] = -1;
       screenSetColor(RED, RED);
+      player->score -= 5;
     }
 
     if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
         terminals[1] == sentences[*current_sentence_index].terminals[1] &&
         terminals[2] == sentences[*current_sentence_index].terminals[2])
     {
-      pass_stage_sound(&engine);
+      door_unlocked_sound(&engine);
     }
   }
 }
@@ -364,10 +366,12 @@ void printMap(
     }
   }
 
+  screenSetColor(BLACK, BLUE);
+  screenGotoxy(MAXX - 15, MAXY - 19);
+  printf("Pontos: %d", player->score);
+
   screenGotoxy(MAXX - 15, MAXY - 18);
-  screenSetColor(BLACK, GREEN);
   printf("Senha: %s", sentences[*current_sentence_index].sentence);
-  screenGotoxy(MAXX - 15, MAXY - 17);
 
   screenGotoxy(MAXX - 15, MAXY - 16);
   if (terminals[0] == sentences[*current_sentence_index].terminals[0])
@@ -431,8 +435,6 @@ void setupStage(
   for (int i = 0; i < LINE; i++)
     strcpy(allocated_map[i], stage_map[i]);
 
-  player->win = 0;
-
   terminals[0] = -1;
   terminals[1] = -1;
   terminals[2] = -1;
@@ -485,12 +487,14 @@ char movePlayer(
                  terminals[1] == sentences[*current_sentence_index].terminals[1] &&
                  terminals[2] == sentences[*current_sentence_index].terminals[2];
 
-    (void)isOpen;
-
-    if (map[y][x] == 'S')
-    {
-      player->win = 1;
-      *running = 0;
+    if (map[y][x] == 'S') {
+      if (isOpen) {
+        pass_stage_sound(&engine);
+        *running = 0;
+      } else {
+        door_locked_sound(&engine);
+        return map[player->y][player->x];
+      }
     }
 
     *lastChar = stage_one_map[player->y][player->x] == 'O' ? '.' : stage_one_map[player->y][player->x];
@@ -503,27 +507,4 @@ char movePlayer(
   }
 
   return map[y][x];
-}
-
-void printStageOneIntro()
-{
-  screenClear();
-  screenGotoxy((MAXX - 30) / 2, (MAXY - 30) / 2);
-  printf(" FASE 1\n\n");
-  printf(" Você deve hackear os terminais fornecendo os valores lógicos corretos.\n\n");
-  printf(" Use W/A/S/D para mover e L para sair.\n\n");
-  printf(" Pressione qualquer tecla para iniciar...\n\n");
-
-  keyboardInit();
-  screenUpdate();
-  int ch = readch();
-
-  while (1)
-  {
-    ch = readch();
-    if (ch)
-      break;
-  }
-
-  screenClear();
 }

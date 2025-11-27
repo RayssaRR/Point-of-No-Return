@@ -60,3 +60,17 @@ void thorns_sound(ma_engine *engine) {
   strcat(srcPath, "/src/assets/thorns.wav");
   ma_engine_play_sound(engine, srcPath, NULL);
 }
+
+void door_locked_sound(ma_engine *engine) {
+  char srcPath[PATH_MAX];
+  getcwd(srcPath, sizeof(srcPath));
+  strcat(srcPath, "/src/assets/door_locked.wav");
+  ma_engine_play_sound(engine, srcPath, NULL);
+}
+
+void door_unlocked_sound(ma_engine *engine) {
+  char srcPath[PATH_MAX];
+  getcwd(srcPath, sizeof(srcPath));
+  strcat(srcPath, "/src/assets/door_unlocked.wav");
+  ma_engine_play_sound(engine, srcPath, NULL);
+}

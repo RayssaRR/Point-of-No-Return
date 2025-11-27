@@ -1,7 +1,6 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <unistd.h>
 #include <string.h>
 #include "miniaudio.h"
@@ -45,7 +44,6 @@ int main() {
   int running = 1;
   int stop = 1;
   char username[100];
-  int penalty = 0;
 
   char **allocated_map;
   allocated_map = (char **) calloc(LINE, sizeof(char *));
@@ -62,9 +60,9 @@ int main() {
   ma_sound_stop(&menu_music);
 
   timerInit(0);
-  time_t inicio = time(NULL);
 
   Player player;
+  player.score = 0;
   player.x = 1;
   player.y = 1;
 
@@ -74,19 +72,13 @@ int main() {
   stage_one(allocated_map, &player);
   dialogue_one();
 
-  stage_two(allocated_map, &player, &penalty);
+  stage_two(allocated_map, &player);
   dialogue_two();
 
-  stage_three(allocated_map, &player, &penalty);
+  stage_three(allocated_map, &player);
   dialogue_three();
 
-  stage_four(allocated_map, &player, &penalty);
-  
-  time_t fim = time(NULL); // Finaliza o cronometro
-  int tempo_jogo = (int) difftime(fim, inicio);
-
-  tempo_jogo += penalty;
-  if (tempo_jogo < 0) tempo_jogo = 0;
+  stage_four(allocated_map, &player);
 
   dialogue_final();
   ma_sound_stop(&stage_noise);
@@ -94,7 +86,7 @@ int main() {
   screenClear();
   screenGotoxy(1,1);
   screenSetColor(BLACK, BLUE);
-  printf("Parabéns %s, sua pontuação foi: %d\n\n", username, tempo_jogo);
+  printf("Parabéns %s, sua pontuação foi: %d\n\n", username, player.score);
 
   printf("Obrigado por jogar Point of No Return!\n");
   //EXIT

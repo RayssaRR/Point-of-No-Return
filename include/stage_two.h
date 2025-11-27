@@ -4,6 +4,6 @@
 #include "player.h"
 #include "utils.h"
 
-int stage_two(char **allocated_map, Player *player, int *penalty);
+int stage_two(char **allocated_map, Player *player);
 
 #endif

@@ -75,8 +75,7 @@ char movePlayer_stageTwo(
     Player *player,
     char *lastChar,
     int terminals[],
-    int *current_sentence_index,
-    int *penalty
+    int *current_sentence_index
 ) {
 
     int x = player->x;
@@ -105,17 +104,17 @@ char movePlayer_stageTwo(
     }
 
     if (next == '^') {
-    thorns_sound(&engine_StageTwo);
-        *penalty -= 5;// 
+      thorns_sound(&engine_StageTwo);
+      player->score -= 5;// 
 
-        stage_two_map[y][x] = '.';
-        map[y][x] = '.';
+      stage_two_map[y][x] = '.';
+      map[y][x] = '.';
 
-        player->x = x;
-        player->y = y;
-        map[y][x] = 'O';
+      player->x = x;
+      player->y = y;
+      map[y][x] = 'O';
 
-        return next;
+      return next;
     }
 
     if (next == 'o') {
@@ -134,14 +133,19 @@ char movePlayer_stageTwo(
     map[y][x] = 'O';
 
     
-    
     if (next == 'S') {
-      int isOpen =  terminals[0] == stage_two_sentences[*current_sentence_index].terminals[0] &&
-                    terminals[1] == stage_two_sentences[*current_sentence_index].terminals[1] &&
-                    terminals[2] == stage_two_sentences[*current_sentence_index].terminals[2];
-    
-      if (isOpen) {
-        *running = 0;
+      int isOpen = terminals[0] == stage_two_sentences[*current_sentence_index].terminals[0] &&
+                   terminals[1] == stage_two_sentences[*current_sentence_index].terminals[1] &&
+                   terminals[2] == stage_two_sentences[*current_sentence_index].terminals[2];
+
+      if (map[y][x] == 'S') {
+        if (isOpen) {
+          pass_stage_sound(&engine_StageTwo);
+          *running = 0;
+        } else {
+          door_locked_sound(&engine_StageTwo);
+          return next;
+        }
       }
     }
 
@@ -150,7 +154,7 @@ char movePlayer_stageTwo(
 
 
 
-int stage_two(char **allocated_map, Player *player, int *penalty) {
+int stage_two(char **allocated_map, Player *player) {
 
      ma_result result;
 
@@ -201,10 +205,10 @@ int stage_two(char **allocated_map, Player *player, int *penalty) {
                 ch = readch();
 
                     //movimento do jogador
-                if (ch == 'w') requiredPosition = movePlayer_stageTwo(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
-                else if (ch == 's') requiredPosition = movePlayer_stageTwo(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
-                else if (ch == 'a') requiredPosition = movePlayer_stageTwo(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
-                else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index, penalty);
+                if (ch == 'w') requiredPosition = movePlayer_stageTwo(UP, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                else if (ch == 's') requiredPosition = movePlayer_stageTwo(DOWN, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                else if (ch == 'a') requiredPosition = movePlayer_stageTwo(LEFT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
+                else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 'l') { running = 0; }
                
                openTerminalStageTwo(terminals, requiredPosition, stage_two_sentences, &current_sentence_index, player);
@@ -236,7 +240,7 @@ int stage_two(char **allocated_map, Player *player, int *penalty) {
             int caughtByZ = (stage_two_map[player->y][player->x] == 'z' && currentCamera == 3);
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ) {
-                *penalty -= 7;
+                player->score -= 5;
                 caught_by_cam_sound(&engine_StageTwo);
                 resetIndexStageTwo(&currentCamera, 4);
                 resetIndexStageTwo(&current_sentence_index, 3);
@@ -260,6 +264,7 @@ if (index >= 0 && index < 3) {
     if (value == sentences[*current_sentence_index].terminals[index]) {
         terminal_correct_value_sound(&engine_StageTwo);
         terminals[index] = value;
+        player->score += 10;
     } else {
         terminal_wrong_value_sound(&engine_StageTwo);
         resetIndexStageTwo(current_sentence_index, 3);
@@ -267,7 +272,7 @@ if (index >= 0 && index < 3) {
         terminals[1] = -1;
         terminals[2] = -1;
         screenSetColor(RED, RED);
-        
+        player->score -= 5;
     }
      if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
             terminals[1] == sentences[*current_sentence_index].terminals[1] &&
@@ -400,6 +405,8 @@ void printMapStageTwo(
 
    
     screenSetColor(BLACK, BLUE);
+    screenGotoxy(MAXX - 15, MAXY - 19);
+    printf("Pontos: %d", player->score);
 
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Senha: %s", stage_two_sentences[*current_sentence_index].sentence);
@@ -488,8 +495,6 @@ void setupStageTwo(
     player->y = 1;
 
     for (int i = 0; i < LINE; i++) strcpy(allocated_map[i], stage_map[i]);
-
-    player->win = 0;
 
     terminals[0] = -1;
     terminals[1] = -1;

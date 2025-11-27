@@ -3,6 +3,6 @@
 
 #include "player.h"
 
-void stage_four(char **map, Player *player, int *penalty);
+void stage_four(char **map, Player *player);
 
 #endif
