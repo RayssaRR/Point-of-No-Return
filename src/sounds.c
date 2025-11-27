@@ -57,6 +57,6 @@ void falling_sound(ma_engine *engine) {
 void thorns_sound(ma_engine *engine) {
   char srcPath[PATH_MAX];
   getcwd(srcPath, sizeof(srcPath));
-  strcat(srcPath, "/src/assets/falling.wav");
+  strcat(srcPath, "/src/assets/thorns.wav");
   ma_engine_play_sound(engine, srcPath, NULL);
 }

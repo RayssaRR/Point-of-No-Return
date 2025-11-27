@@ -434,9 +434,9 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
 
         (void)isOpen;
 
-        thorns_sound(&engineStageThree);
         if (next == '^')
         {
+            thorns_sound(&engineStageThree);
             *penalty -= 5;
 
             stage_Three_map[y][x] = '.';
@@ -445,9 +445,9 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
             return next;
         }
 
-        falling_sound(&engineStageThree);
         if (next == 'o')
         {
+            falling_sound(&engineStageThree);
             map[player->y][player->x] = stage_Three_map[player->y][player->x];
 
             player->x = 1;
@@ -457,7 +457,6 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
             return next;
         }
 
-        pass_stage_sound(&engineStageThree);
         if (map[y][x] == 'S')
         {
             player->win = 1;
