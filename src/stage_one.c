@@ -155,7 +155,7 @@ int stage_one(char **allocated_map, Player *player)
       int caughtByZ = (stage_one_map[player->y][player->x] == 'z' && currentCamera == 3);
       if (caughtByW || caughtByX || caughtByY || caughtByZ)
       {
-        player->score -= 5;
+        updateScore(player, -5);
         caught_by_cam_sound(&engine);
         resetIndex(&currentCamera, 4);
         resetIndex(&current_sentence_index, 2);
@@ -181,7 +181,7 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
     {
       terminal_correct_value_sound(&engine);
       terminals[index] = value;
-      player->score += 10;
+      updateScore(player, 10);
     }
     else
     {
@@ -191,7 +191,7 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
       terminals[1] = -1;
       terminals[2] = -1;
       screenSetColor(RED, RED);
-      player->score -= 5;
+      updateScore(player, -5);
     }
 
     if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&

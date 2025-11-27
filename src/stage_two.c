@@ -105,7 +105,7 @@ char movePlayer_stageTwo(
 
     if (next == '^') {
       thorns_sound(&engine_StageTwo);
-      player->score -= 5;// 
+      updateScore(player, -5);
 
       stage_two_map[y][x] = '.';
       map[y][x] = '.';
@@ -238,7 +238,7 @@ int stage_two(char **allocated_map, Player *player) {
             int caughtByZ = (stage_two_map[player->y][player->x] == 'z' && currentCamera == 3);
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ) {
-                player->score -= 5;
+                updateScore(player, -5);
                 caught_by_cam_sound(&engine_StageTwo);
                 resetIndexStageTwo(&currentCamera, 4);
                 resetIndexStageTwo(&current_sentence_index, 3);
@@ -262,7 +262,7 @@ if (index >= 0 && index < 3) {
     if (value == sentences[*current_sentence_index].terminals[index]) {
         terminal_correct_value_sound(&engine_StageTwo);
         terminals[index] = value;
-        player->score += 10;
+        updateScore(player, 10);
     } else {
         terminal_wrong_value_sound(&engine_StageTwo);
         resetIndexStageTwo(current_sentence_index, 3);
@@ -270,7 +270,7 @@ if (index >= 0 && index < 3) {
         terminals[1] = -1;
         terminals[2] = -1;
         screenSetColor(RED, RED);
-        player->score -= 5;
+        updateScore(player, -5);
     }
      if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
             terminals[1] == sentences[*current_sentence_index].terminals[1] &&

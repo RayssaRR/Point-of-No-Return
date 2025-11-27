@@ -132,7 +132,7 @@ int stage_three(char **allocated_map, Player *player)
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ)
             {
-                player->score -= 5;
+                updateScore(player, -5);
                 caught_by_cam_sound(&engineStageThree);
                 resetIndexThree(&currentCamera, 4);
                 resetIndexThree(&current_sentence_index, 2);
@@ -158,7 +158,7 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
         {
             terminal_correct_value_sound(&engineStageThree);
             terminals[index] = value;
-            player->score += 10;
+            updateScore(player, 10);
         }
         else
         {
@@ -166,7 +166,7 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
             resetIndexThree(current_sentence_index, 2);
             terminals[0] = terminals[1] = terminals[2] = -1;
             screenSetColor(RED, RED);
-            player->score -= 5;
+            updateScore(player, -5);
         }
 
         if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
@@ -451,7 +451,7 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
         if (next == '^')
         {
             thorns_sound(&engineStageThree);
-            player->score -= 5;
+            updateScore(player, -5);
 
             stage_Three_map[y][x] = '.';
             map[y][x] = '.';
