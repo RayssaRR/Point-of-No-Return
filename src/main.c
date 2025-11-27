@@ -82,9 +82,9 @@ int main() {
   screenClear();
   screenGotoxy(1,1);
   screenSetColor(BLACK, BLUE);
-  printf("Parabéns %s, sua pontuação foi: %d\n\n", username, player.score);
+  printf("Obrigado por jogar Point of No Return, %s!", username);
+  printf("Sua pontuação foi: %d pontos!\n", player.score);
 
-  printf("Obrigado por jogar Point of No Return!\n");
   //EXIT
 
   free_map_memory(allocated_map);

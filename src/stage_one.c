@@ -14,7 +14,6 @@ typedef struct
   int terminals[3];
 } SentenceModel;
 
-void printStageOneIntro();
 void printMap(
     char **map,
     Player *player,
@@ -41,16 +40,6 @@ char movePlayer(
     int terminals[],
     int *current_sentence_index);
 
-void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
-{
-  // O callback deve ser definido, mas não precisamos de lógica aqui para a reprodução simples.
-  // O ma_data_source_read_pcm_frames cuidará da leitura dos dados.
-  (void)pDevice;
-  (void)pOutput;
-  (void)pInput;
-  (void)frameCount;
-}
-
 char stage_one_map[LINE][COLUMN + 1] = {
     "########################################",
     "#O.....................................#",
@@ -73,9 +62,10 @@ char stage_one_map[LINE][COLUMN + 1] = {
     "####################S###################"};
 
 SentenceModel sentences[3] = {
-    {"A ∧ B ∧ C", {1, 1, 1}},
-    {"A ∧ B ∧ ¬(¬C)", {1, 1, 0}},
-    {"A ∧ ¬(¬B) ∧ ¬C", {1, 0, 1}}};
+  {"A ∧ (B ∧ C)", {1, 1, 1}},
+  {"(A ∧ B) ∧ ¬C)", {1, 1, 0}},
+  {"(A ∧ ¬B) ∧ ¬C", {1, 0, 0}}
+};
 
 ma_engine engine;
 

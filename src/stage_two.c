@@ -39,9 +39,9 @@ char stage_two_map[LINE][COLUMN + 1] = {
 };
 
 StageTwoSentence stage_two_sentences[3] = {
-    {"(A ∧ ¬(¬B)) ∧ ¬C", {1,0,1}},
-    {"(A ∧ ¬B) ∧ ¬(¬C)", {1,1,0}},
-    {"(A ∧ ¬B) ∧ ¬C", {1,1,1}}
+    {"(A ∧ ¬B) ∧ ¬C", {1,0,0}},
+    {"(A ∧ ¬B) ∧ ¬(¬C)", {1,0,1}},
+    {"(A ∧ B) ∧ ¬C", {1,1,0}}
 };
 
 ma_engine engine_StageTwo;
@@ -89,8 +89,6 @@ char movePlayer_stageTwo(
 
     char next = stage_two_map[y][x];
     
-
-
     if (next == '#') {
         return next;
     }
@@ -131,7 +129,6 @@ char movePlayer_stageTwo(
     player->x = x;
     player->y = y;
     map[y][x] = 'O';
-
     
     if (next == 'S') {
       int isOpen = terminals[0] == stage_two_sentences[*current_sentence_index].terminals[0] &&
@@ -176,11 +173,9 @@ int stage_two(char **allocated_map, Player *player) {
     int ch = 0;
     int lastCameraSwitch = 0;
     
-
     keyboardInit();
     screenInit(0);
 
-    
     setupStageTwo(player, allocated_map, terminals, &camera, stage_two_map);
 
     allocated_map[player->y][player->x] = 'O';  
@@ -188,7 +183,6 @@ int stage_two(char **allocated_map, Player *player) {
     int stageTime = 60000; 
     timerInit(stageTime);  
     lastCameraSwitch = getTimeDiff();  
-
 
     // loop principal
     while (1) {
@@ -313,8 +307,6 @@ int open_terminal_modelStageTwo(char terminal) {
     return terminal_value;
 }
 
-
-
 void printMapStageTwo(
     char **map,
     Player *player,
@@ -400,7 +392,6 @@ void printMapStageTwo(
             printf("%c", ch);
         }
     }
-
    
     screenSetColor(BLACK, BLUE);
     screenGotoxy(MAXX - 15, MAXY - 19);
@@ -409,7 +400,6 @@ void printMapStageTwo(
     screenGotoxy(MAXX - 15, MAXY - 18);
     printf("Senha: %s", stage_two_sentences[*current_sentence_index].sentence);
 
-   
     screenGotoxy(MAXX - 15, MAXY - 16);
     if (terminals[0] == stage_two_sentences[*current_sentence_index].terminals[0]) {
         screenSetColor(BLACK, GREEN);
@@ -418,7 +408,6 @@ void printMapStageTwo(
         screenSetColor(BLACK, BROWN);
         printf("Terminal A: -- ");
     }
-
    
     screenGotoxy(MAXX - 15, MAXY - 15);
     if (terminals[1] == stage_two_sentences[*current_sentence_index].terminals[1]) {
@@ -428,7 +417,6 @@ void printMapStageTwo(
         screenSetColor(BLACK, BROWN);
         printf("Terminal B: -- ");
     }
-
    
     screenGotoxy(MAXX - 15, MAXY - 14);
     if (terminals[2] == stage_two_sentences[*current_sentence_index].terminals[2]) {
@@ -456,7 +444,6 @@ void printMapStageTwo(
     screenGotoxy(boxX, boxY);
     printf("+------------------------------+");
 
-
     screenGotoxy(boxX, boxY + 1);
     printf("| GUIA DO MAPA                |");
 
@@ -472,10 +459,8 @@ void printMapStageTwo(
     screenGotoxy(boxX, boxY + 5);
     printf("| A/B/C -> Digite 0 ou 1      |");
 
-
     screenGotoxy(boxX, boxY + 6);
     printf("| (S)  ->      Saida          |");
-
 
     screenGotoxy(boxX, boxY + 7);
     printf("+------------------------------+");
