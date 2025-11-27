@@ -263,7 +263,6 @@ if (index >= 0 && index < 3) {
         terminals[1] = -1;
         terminals[2] = -1;
         screenSetColor(RED, RED);
-        updateScore(player, -5);
     }
      if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
             terminals[1] == sentences[*current_sentence_index].terminals[1] &&
