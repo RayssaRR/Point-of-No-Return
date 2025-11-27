@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 #include "miniaudio.h"
 #include "screen.h"
 #include "timer.h"
@@ -37,9 +38,16 @@ int main() {
     player.x = 1;
     player.y = 1;
 
+    dialogue_zero();
     stage_one(allocated_map, &player);
+    dialogue_one();
+
     stage_two(allocated_map, &player, &penalty);
+    dialogue_two();
+
     stage_three(allocated_map, &player, &penalty);
+    dialogue_three();
+
     stage_four(allocated_map, &player, &penalty);
 
     time_t fim = time(NULL); // Finaliza o cronometro
@@ -48,6 +56,7 @@ int main() {
     tempo_jogo += penalty;
     if (tempo_jogo < 0) tempo_jogo = 0;
 
+    dialogue_final();
 
     screenClear();
     screenGotoxy(1,1);
