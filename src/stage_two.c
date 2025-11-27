@@ -483,5 +483,3 @@ void resetIndexStageTwo(int *current_sentence_index, int total_sentences) {
     *current_sentence_index = (*current_sentence_index + 1) % total_sentences;
     screenUpdate();
 }
-
-

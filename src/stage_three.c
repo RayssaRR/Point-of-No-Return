@@ -36,22 +36,22 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
 char stage_Three_map[LINE][COLUMN + 1] = {
     "########################################",
     "#O........o.....#######................#",
-    "###.###################.################",
-    "#...#........zzzz.......#.............##",
-    "#.###.#######.#z#######.#############.##",
-    "#.#...#.....#.#zzzz.................#..#",
-    "#w#.###.###C#.#z#######.#.#.###.#.#.####",
-    "#www#...#.###.#z#.....#.#.#.#.....#...##",
-    "#w#.#.###.#.#.#.#.###.#.#.#.#.###.######",
-    "#o#.#...#x#.#.#.#.#.#...#.#.#......#..##",
-    "#.#.#.#.###x#.#.#...#...###.#.#######..#",
-    "#.#.#.#..xxxxx..###.#.###.#..........#.#",
-    "#.#.#.#.#.###x###.#.#.#.#.#.########...#",
-    "#.#.#...#.#..x#B#.#.#.#.#.#..........#.#",
-    "#.#.#.#.#.#.###.#.#.#.#.#.#.#######.####",
-    "#.#.#.#.#.#.#...#.#y#.#.#.#.......#.zzz#",
-    "#.#.#.#.#.#.#.#####y#y#.############z###",
-    "#.#.#.#S#.#.#...yyyyyy#...........zzz.A#",
+    "###.###################.########.#######",
+    "#...#...^..yyyyy........#....^........##",
+    "#^###.#######y#.#######.#############.##",
+    "#.#...#.....#y#.................^...#..#",
+    "#.#x###x###C#.#.#######.#.#X###.#.#.####",
+    "#xxx#...#.###.#.#.....#.#.#.#.....#...##",
+    "#xW.#.###.#.#.#.#.###.#.#.#.#.###.######",
+    "#o#.#...#.#.#.#.#.#.#.#.....#......#..##",
+    "#.#.#.#.###.#.#.#...#...#Y#.#.#######..#",
+    "#.#.#.#.........###.#.###.#..........#.#",
+    "#.#.#.#.#.###.###.#.#.#.#.#.########...#",
+    "#.#.#...#.#...#B#.#w..#.#.#..........#.#",
+    "#.#.#.X.#.#.##X.#w#w#.#.#.#.#######.####",
+    "#.#.#.#.#.#.#...#w.w#.#.#.#^....o.Z.xxx#",
+    "#.#.#.#.#.#.#.o##w###X#.############x###",
+    "#.#.#.#S#.#.#...www...#...........xxx.A#",
     "########################################"};
 
 SentenceModel sentencesThree[4] = {
@@ -117,6 +117,7 @@ int stage_three(char **allocated_map, Player *player, int *penalty)
             int caughtByX = (stage_Three_map[player->y][player->x] == 'x' && currentCamera == 1);
             int caughtByY = (stage_Three_map[player->y][player->x] == 'y' && currentCamera == 2);
             int caughtByZ = (stage_Three_map[player->y][player->x] == 'z' && currentCamera == 3);
+
             if (caughtByW || caughtByX || caughtByY || caughtByZ)
             {
                 resetIndexThree(&currentCamera, 4);
@@ -339,28 +340,28 @@ void printMapThree(
     printf("+------------------------------+");
 
     screenGotoxy(boxX, boxY + 1);
-    printf("| GUIA DO MAPA                |");
+    printf("| GUIA DO MAPA                 |");
 
     screenGotoxy(boxX, boxY + 2);
-    printf("| (o) Buraco -> Reinicia      |");
+    printf("| (o) Buraco -> Reinicia       |");
 
     screenGotoxy(boxX, boxY + 3);
-    printf("| (^) Espinho -> -5 pontos    |");
+    printf("| (^) Espinho -> -5 pontos     |");
 
     screenGotoxy(boxX, boxY + 4);
-    printf("| Cameras -> -7 se te ver     |");
+    printf("| Cameras -> -7 se te ver      |");
 
     screenGotoxy(boxX, boxY + 5);
-    printf("| Dica: fique imóvel e a      |");
+    printf("| Dica: fique imóvel e a       |");
 
     screenGotoxy(boxX, boxY + 6);
-    printf("| magia da Pixie te protege   |");
+    printf("| magia da Pixie te protege    |");
 
     screenGotoxy(boxX, boxY + 7);
-    printf("| A/B/C -> Digite 0 ou 1      |");
+    printf("| A/B/C -> Digite 0 ou 1       |");
 
     screenGotoxy(boxX, boxY + 8);
-    printf("| (S) -> Saida                |");
+    printf("| (S) -> Saida                 |");
 
     screenGotoxy(boxX, boxY + 9);
     printf("+------------------------------+");
@@ -406,21 +407,15 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
 
     char next = map[y][x];
 
-    if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z')
+    if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z' || map[y][x] == 'o' || map[y][x] == '^')
     {
+        int isOpen = terminals[0] == sentencesThree[*current_sentence_index].terminals[0] &&
+                     terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
+                     terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
 
         if (next == '^')
         {
-            *penalty -= 5;
-
-            stage_Three_map[y][x] = '.';
-            map[y][x] = '.';
-
-            player->x = x;
-            player->y = y;
-            map[y][x] = 'O';
-
-            return next;
+            *penalty += 5;
         }
 
         if (next == 'o')
@@ -434,26 +429,18 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
             return next;
         }
 
-        if (map[y][x] == 'S')
-        {
-            int isOpen = terminals[0] == sentencesThree[*current_sentence_index].terminals[0] &&
-                         terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
-                         terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
-
-            if (isOpen)
-            {
-                *running = 0;
-            }
+        if (map[y][x] == 'S' && isOpen) {
+            *running = 0;
         }
 
-        *lastChar = '.';
+        *lastChar = stage_Three_map[player->y][player->x] == 'O' ? '.' : stage_Three_map[player->y][player->x];
+
         map[player->y][player->x] = *lastChar;
 
         player->x = x;
         player->y = y;
-
-        map[y][x] = 'O';
+        map[player->y][player->x] = 'O';
     }
 
-    return next;
+    return map[y][x];
 }
