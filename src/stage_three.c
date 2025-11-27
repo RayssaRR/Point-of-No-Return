@@ -371,22 +371,22 @@ void printMapThree(
     printf("| (o) Buraco -> Reinicia              |");
 
     screenGotoxy(boxX, boxY + 3);
-    printf("| Terminal correto -> +10 pontos      |");
+    printf("| Terminal correto -> +10 Pontos      |");
 
     screenGotoxy(boxX, boxY + 4);
-    printf("| Terminal incorreto -> -5 pontos     |");
+    printf("| Terminal incorreto -> -5 Pontos     |");
 
     screenGotoxy(boxX, boxY + 5);
-    printf("| (^) Espinho -> -5 pontos            |");
+    printf("| (^) Espinho -> -5 Pontos            |");
+
+    screenGotoxy(boxX, boxY + 4);
+    printf("| Cameras -> Reseta sentença          |");
+
+    screenGotoxy(boxX, boxY + 5);
+    printf("| A/B/C -> Digite 0 ou 1              |");
 
     screenGotoxy(boxX, boxY + 6);
-    printf("| Cameras -> -5 pontos                |");
-
-    screenGotoxy(boxX, boxY + 7);
-    printf("| Dica: fique imóvel e a              |");
-
-    screenGotoxy(boxX, boxY + 8);
-    printf("| magia da Pixie te protege           |");
+    printf("| (S) -> Saida                        |");
     screenGotoxy(boxX, boxY + 9);
     printf("+-------------------------------------+");
 
