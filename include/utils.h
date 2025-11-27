@@ -23,4 +23,6 @@ void dialogue_two();
 void dialogue_three();
 void dialogue_final();
 
+void updateScore(Player *player, int points);
+
 #endif
