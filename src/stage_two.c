@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "utils.h"
+#include "miniaudio.h"
+#include "sounds.h"
 #include "player.h"
 #include "screen.h"
 #include "timer.h"
@@ -42,6 +44,8 @@ StageTwoSentence stage_two_sentences[3] = {
     {"(A ∧ ¬B) ∧ ¬C", {1,0,0}}
 };
 
+ma_engine engine_StageTwo;
+
 void printMapStageTwo(
     char **map,
     Player *player,
@@ -74,6 +78,7 @@ char movePlayer_stageTwo(
     int *current_sentence_index,
     int *penalty
 ) {
+
     int x = player->x;
     int y = player->y;
 
@@ -84,6 +89,7 @@ char movePlayer_stageTwo(
     else if (direction == RIGHT) x++;
 
     char next = stage_two_map[y][x];
+    
 
 
     if (next == '#') {
@@ -91,11 +97,16 @@ char movePlayer_stageTwo(
     }
 
     map[player->y][player->x] = stage_two_map[player->y][player->x];
-
+   
     *lastChar = next;
 
+    if(next == '.'){
+        walk_sound(&engine_StageTwo);
+    }
+
     if (next == '^') {
-        *penalty -= 5;
+    thorns_sound(&engine_StageTwo);
+        *penalty -= 5;// 
 
         stage_two_map[y][x] = '.';
         map[y][x] = '.';
@@ -108,6 +119,7 @@ char movePlayer_stageTwo(
     }
 
     if (next == 'o') {
+        falling_sound(&engine_StageTwo);
         map[player->y][player->x] = stage_two_map[player->y][player->x];
 
         player->x = 1;
@@ -121,6 +133,7 @@ char movePlayer_stageTwo(
     player->y = y;
     map[y][x] = 'O';
 
+    
     
     if (next == 'S') {
       int isOpen =  terminals[0] == stage_two_sentences[*current_sentence_index].terminals[0] &&
@@ -138,6 +151,14 @@ char movePlayer_stageTwo(
 
 
 int stage_two(char **allocated_map, Player *player, int *penalty) {
+
+     ma_result result;
+
+    result = ma_engine_init(NULL, &engine_StageTwo);
+    if (result != MA_SUCCESS) {
+        printf("Erro ao inicializar o motor de áudio (miniaudio).\n");
+        return -1;
+    }
 
     player->x = 1;
     player->y = 1;
@@ -216,6 +237,7 @@ int stage_two(char **allocated_map, Player *player, int *penalty) {
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ) {
                 *penalty -= 7;
+                caught_by_cam_sound(&engine_StageTwo);
                 resetIndexStageTwo(&currentCamera, 4);
                 resetIndexStageTwo(&current_sentence_index, 3);
                 resetIndexStageTwo(terminals, 3);
@@ -236,8 +258,10 @@ if (index >= 0 && index < 3) {
     int value = open_terminal_modelStageTwo(requiredTerminal);
 
     if (value == sentences[*current_sentence_index].terminals[index]) {
+        terminal_correct_value_sound(&engine_StageTwo);
         terminals[index] = value;
     } else {
+        terminal_wrong_value_sound(&engine_StageTwo);
         resetIndexStageTwo(current_sentence_index, 3);
         terminals[0] = -1;
         terminals[1] = -1;
@@ -245,7 +269,12 @@ if (index >= 0 && index < 3) {
         screenSetColor(RED, RED);
         
     }
-}
+     if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
+            terminals[1] == sentences[*current_sentence_index].terminals[1] &&
+            terminals[2] == sentences[*current_sentence_index].terminals[2]) {
+          pass_stage_sound(&engine_StageTwo);
+        }
+    }
 
 }
 
@@ -413,7 +442,7 @@ void printMapStageTwo(
         screenSetColor(BLUE, BLUE);
     }
 
-     int boxX = COLUMN + 20;   
+    int boxX = COLUMN + 20;   
     int boxY = 13;
 
     screenSetColor(BLACK, BLUE);
@@ -422,40 +451,28 @@ void printMapStageTwo(
     screenGotoxy(boxX, boxY);
     printf("+------------------------------+");
 
-    // título
+
     screenGotoxy(boxX, boxY + 1);
     printf("| GUIA DO MAPA                |");
 
-    // linha 1
     screenGotoxy(boxX, boxY + 2);
     printf("| (o) Buraco  -> Reinicia     |");
 
-    // linha 2
     screenGotoxy(boxX, boxY + 3);
     printf("| (^) Espinho -> -5 pontos    |");
 
-    // linha 3
     screenGotoxy(boxX, boxY + 4);
-    printf("| Cameras -> -7 se te ver     |");
+    printf("| Cameras -> reseta A, B, C   |");
 
-    // linha 4 (dica parte 1)
     screenGotoxy(boxX, boxY + 5);
-    printf("| Dica: fique imóvel e a      |");
-
-    // linha 5 (dica parte 2)
-    screenGotoxy(boxX, boxY + 6);
-    printf("| magia da Pixie te protege   |");
-
-    // linha 6
-    screenGotoxy(boxX, boxY + 7);
     printf("| A/B/C -> Digite 0 ou 1      |");
 
-    // linha 7
-    screenGotoxy(boxX, boxY + 8);
+
+    screenGotoxy(boxX, boxY + 6);
     printf("| (S)  ->      Saida          |");
 
-    // borda inferior
-    screenGotoxy(boxX, boxY + 9);
+
+    screenGotoxy(boxX, boxY + 7);
     printf("+------------------------------+");
 
     screenUpdate();

@@ -355,31 +355,33 @@ void printMapThree(
         screenSetColor(BLUE, BLUE);
     }
 
-    int boxX = COLUMN + 20;
+    int boxX = COLUMN + 20;   
     int boxY = 13;
 
     screenSetColor(BLACK, BLUE);
 
+    // borda superior
     screenGotoxy(boxX, boxY);
     printf("+------------------------------+");
+
 
     screenGotoxy(boxX, boxY + 1);
     printf("| GUIA DO MAPA                 |");
 
     screenGotoxy(boxX, boxY + 2);
-    printf("| (o) Buraco -> Reinicia       |");
+    printf("| (o) Buraco -> Reinicia      |");
 
     screenGotoxy(boxX, boxY + 3);
     printf("| (^) Espinho -> -5 pontos     |");
 
     screenGotoxy(boxX, boxY + 4);
-    printf("| Cameras -> -7 se te ver      |");
+    printf("| Cameras -> -7 se te ver     |");
 
     screenGotoxy(boxX, boxY + 5);
-    printf("| A/B/C -> Digite 0 ou 1       |");
+    printf("| Dica: fique imóvel e a      |");
 
     screenGotoxy(boxX, boxY + 6);
-    printf("| (S) -> Saida                 |");
+    printf("| magia da Pixie te protege   |");
 
     screenGotoxy(boxX, boxY + 7);
     printf("+------------------------------+");
