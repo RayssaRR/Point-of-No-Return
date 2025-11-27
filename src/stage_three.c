@@ -3,334 +3,503 @@
 #include "utils.h"
 #include "player.h"
 #include "screen.h"
-#include "timer.h"
 #include "keyboard.h"
 
 #define LINE 19
 #define COLUMN 40
 #define NUM_TERMINALS 4
 #define NUM_CAMERAS 4
-#define NUM_SENTENCES 3
+#define NUM_VARS_ABC 3
+#define TRUTH_ROWS_ABC 8
 
-typedef struct {
-    char sentence[200];
-    int terminals[NUM_TERMINALS];
+// Control "time" without real timer
+#define CAMERA_SWITCH_INTERVAL 4000   // how many loops to switch camera
+#define ROBOT_MOVE_INTERVAL    800    // how many loops to move robots
+
+typedef struct StageThreeSentence {
+    char sentence[200];                            // logical formula
+    int inputs[TRUTH_ROWS_ABC][NUM_VARS_ABC];      // truth table inputs (A,B,C)
+    int outputs[TRUTH_ROWS_ABC];                   // truth table expected outputs
 } StageThreeSentence;
 
+// --------- Map template ---------
+
 char stage_three_map_template[LINE][COLUMN + 1] = {
-    "#######################################",
-    "#O.............................A........",
-    "####.######################...##.######.",
-    "..............xxxx.................D##.",
-    "##.#####.######X#########.#######....#.",
-    ".#.#####......xxxx..##.......B......#.",
-    "##.############.##########.####y######.",
-    "...................###.......##y######.",
-    ".####.##.#####################yY#####.",
-    "C...........................yyyyyyyyy....",
-    ".#####.#################.############.#.",
-    ".#####.....................T..........#.",
-    ".#######w###################z########.#.",
-    ".....wwwwwww############Zzzzzzzzzz###.#.",
-    ".#######wW##################z#######.#.",
-    ".#####wwwwwww................##########.",
-    ".#################.####################.",
-    ".####.P...............................##.",
-    "####################S###################"
+    "########################################",
+    ".O.............................A........",
+    ".#################.#########..#.######..",
+    "..............xxxx......................",
+    ".#######.######X#########.############..",
+    "..............xxxx..##.......B.........",
+    "##############.##########.####.########",
+    "#..................###.........y........",
+    "#####.##.######################Y#######",
+    "C...........................yyyyyyyyy..#",
+    ".#####.#################.############.##",
+    ".#####.....................Tz..........",
+    "########w###################z########.#",
+    ".....wwwwwww############Zzzzzzzzzz...#.",
+    ".#######wW##################z#######..",
+    ".#####wwwwwww................#########",
+    ".......###########.###################",
+    "#####.P................................",
+    "####################S##################"
 };
 
-StageThreeSentence stage_three_sentences[NUM_SENTENCES] = {
-    {"(¬A -> ¬C) ^ (B <-> D)", {0, 1, 0, 1}},
-    {"(A <-> B) -> (C -> D)", {1, 1, 0, 0}},
-    {"(A ^ (B -> C)) -> D", {1, 1, 1, 0}}
+// --------- Sentences for A, B, C, D ---------
+
+StageThreeSentence stage_three_sentences[NUM_TERMINALS] = {
+    {
+        "(A -> B) -> C",
+        {
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {1, 0, 1},
+            {1, 1, 0},
+            {1, 1, 1}
+        },
+        {1, 1, 1, 1, 1, 1, 0, 1}
+    },
+    {
+        "A ^ (B -> C)",
+        {
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {1, 0, 1},
+            {1, 1, 0},
+            {1, 1, 1}
+        },
+        {0, 0, 0, 0, 1, 1, 0, 1}
+    },
+    {
+        "(A v B) -> C",
+        {
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {1, 0, 1},
+            {1, 1, 0},
+            {1, 1, 1}
+        },
+        {1, 1, 0, 1, 0, 1, 0, 1}
+    },
+    {
+        "A -> (B ^ ¬C)",
+        {
+            {0, 0, 0},
+            {0, 0, 1},
+            {0, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {1, 0, 1},
+            {1, 1, 0},
+            {1, 1, 1}
+        },
+        {1, 1, 1, 1, 0, 0, 1, 0}
+    }
 };
 
-void printMapStageThree(
-    char **map,
-    Player *player,
-    int terminals[],
-    StageThreeSentence sentences[],
-    int *current_sentence_index,
-    int currentCamera,
-    int robot_r_y,
-    int robot_g_y,
-    int *running
-);
+// --------- Prototypes ---------
 
 void setupStageThree(
     Player *player,
     char **allocated_map,
-    int terminals[],
+    int terminal_states[],
     char stage_map[LINE][COLUMN + 1]
 );
 
+void printMapStageThree(
+    char **allocated_map,
+    Player *player,
+    int terminal_states[],
+    StageThreeSentence sentences[],
+    int *current_sentence_index,
+    int current_camera_index,
+    int robot_red_y,
+    int robot_green_y,
+    int *is_running
+);
+
+char movePlayerStageThree(
+    MoveDirection direction,
+    char **allocated_map,
+    int *is_running,
+    Player *player
+);
+
 void openTerminalStageThree(
-    int terminals[],
-    char terminal,
+    int terminal_states[],
+    char terminal_position,
     StageThreeSentence sentences[],
     int *current_sentence_index,
     Player *player
 );
 
-int open_terminal_modelStageThree(char terminal);
-
-void resetIndexStageThree(int *item, int total);
-
-char movePlayer_stageThree(
-    MoveDirection direction,
-    char **map,
-    int *running,
-    Player *player,
-    char *lastChar
+int openTerminalTruthTableModelStageThree(
+    StageThreeSentence sentences[],
+    char terminal_position
 );
 
-void checkTimerStageThree(Player *player, int *running);
+void resetIndexStageThree(int *current_index, int total);
+
+// --------- Main stage function ---------
 
 int stage_three(char **allocated_map, Player *player) {
-    const int ROBOT_R_FIXED_X = 29;
-    const int ROBOT_R_START_Y = 3;
-    const int ROBOT_R_END_Y = 5;
+    const int ROBOT_RED_FIXED_X   = 29;
+    const int ROBOT_RED_START_Y   = 1;
+    const int ROBOT_RED_END_Y     = 3;
 
-    const int ROBOT_G_FIXED_X = 5;
-    const int ROBOT_G_START_Y = 8;
-    const int ROBOT_G_END_Y = 11;
+    const int ROBOT_GREEN_FIXED_X = 5;
+    const int ROBOT_GREEN_START_Y = 8;
+    const int ROBOT_GREEN_END_Y   = 11;
 
     const int TELEPORT_EXIT_X = 6;
     const int TELEPORT_EXIT_Y = 17;
 
-    static int robot_r_y = 0;
-    static int robot_r_x = 0;
-    static int robot_r_direction = 1;
+    static int robot_red_y           = 0;
+    static int robot_red_x           = 0;
+    static int robot_red_direction   = 1; 
 
-    static int robot_g_y = 0;
-    static int robot_g_x = 0;
-    static int robot_g_direction = 1;
+    static int robot_green_y         = 0;
+    static int robot_green_x         = 0;
+    static int robot_green_direction = 1;
 
-    static int robot_initialized = 0;
+    static int robots_initialized    = 0;
 
     player->x = 1;
     player->y = 1;
 
     int current_sentence_index = 0;
-    int running = 1;
-    int currentCamera = 0;
-    int terminals[NUM_TERMINALS] = {-1, -1, -1, -1};
+    int is_running             = 1;
+    int current_camera_index   = 0;         
+    int terminal_states[NUM_TERMINALS] = {-1, -1, -1, -1}; 
 
-    char requiredPosition = '.';
-    char lastChar = '.';
-    int ch = 0;
-    int lastCameraSwitch = 0;
-    int lastRobotMove = 0;
+    char last_required_position = '.';
+    int key_pressed = 0;
+    int need_redraw = 0;
+
+    long long loop_counter = 0;
+    long long next_camera_switch_tick = CAMERA_SWITCH_INTERVAL;
+    long long next_robot_move_tick    = ROBOT_MOVE_INTERVAL;
 
     keyboardInit();
     screenInit(0);
 
-    if (!robot_initialized) {
-        robot_r_y = ROBOT_R_START_Y;
-        robot_r_x = ROBOT_R_FIXED_X;
+    setupStageThree(player, allocated_map, terminal_states, stage_three_map_template);
 
-        robot_g_y = ROBOT_G_START_Y;
-        robot_g_x = ROBOT_G_FIXED_X;
 
-        robot_initialized = 1;
+    if (!robots_initialized) {
+        robot_red_y  = ROBOT_RED_START_Y;
+        robot_red_x  = ROBOT_RED_FIXED_X;
+
+        robot_green_y = ROBOT_GREEN_START_Y;
+        robot_green_x = ROBOT_GREEN_FIXED_X;
+
+        robots_initialized = 1;
     }
 
-    setupStageThree(player, allocated_map, terminals, stage_three_map_template);
-
-    timerInit(0);
-    lastCameraSwitch = getTimeDiff();
-    lastRobotMove = getTimeDiff();
+    setupStageThree(player, allocated_map, terminal_states, stage_three_map_template);
 
     while (1) {
-        printMapStageThree(allocated_map, player, terminals, stage_three_sentences, &current_sentence_index, currentCamera, robot_r_y, robot_g_y, &running);
+        printMapStageThree(
+            allocated_map,
+            player,
+            terminal_states,
+            stage_three_sentences,
+            &current_sentence_index,
+            current_camera_index,
+            robot_red_y,
+            robot_green_y,
+            &is_running
+        );
 
-        while (running) {
+        while (is_running) {
+            loop_counter++;
+
+            if (loop_counter >= next_robot_move_tick) {
+                int next_red_y = robot_red_y + robot_red_direction;
+                if (next_red_y < ROBOT_RED_START_Y ||
+                    next_red_y > ROBOT_RED_END_Y ||
+                    stage_three_map_template[next_red_y][robot_red_x] == '#') {
+                    robot_red_direction *= -1;
+                }
+                robot_red_y += robot_red_direction;
+
+                int next_green_y = robot_green_y + robot_green_direction;
+                if (next_green_y < ROBOT_GREEN_START_Y ||
+                    next_green_y > ROBOT_GREEN_END_Y ||
+                    stage_three_map_template[next_green_y][robot_green_x] == '#') {
+                    robot_green_direction *= -1;
+                }
+                robot_green_y += robot_green_direction;
+
+                next_robot_move_tick = loop_counter + ROBOT_MOVE_INTERVAL;
+                need_redraw = 1;
+            }
+
+            if (loop_counter >= next_camera_switch_tick) {
+                resetIndexStageThree(&current_camera_index, NUM_CAMERAS);
+                next_camera_switch_tick = loop_counter + CAMERA_SWITCH_INTERVAL;
+                need_redraw = 1;
+            }
+
             if (keyhit()) {
-                ch = readch();
+                key_pressed = readch();
 
-                if (ch == 'w') {
-                    requiredPosition = movePlayer_stageThree(UP, allocated_map, &running, player, &lastChar);
-                } else if (ch == 's') {
-                    requiredPosition = movePlayer_stageThree(DOWN, allocated_map, &running, player, &lastChar);
-                } else if (ch == 'a') {
-                    requiredPosition = movePlayer_stageThree(LEFT, allocated_map, &running, player, &lastChar);
-                } else if (ch == 'd') {
-                    requiredPosition = movePlayer_stageThree(RIGHT, allocated_map, &running, player, &lastChar);
-                } else if (ch == 'l') {
-                    running = 0; player->win = 0;
+                if (key_pressed == 'w') {
+                    last_required_position = movePlayerStageThree(UP, allocated_map, &is_running, player);
+                    need_redraw = 1;
+                } else if (key_pressed == 's') {
+                    last_required_position = movePlayerStageThree(DOWN, allocated_map, &is_running, player);
+                    need_redraw = 1;
+                } else if (key_pressed == 'a') {
+                    last_required_position = movePlayerStageThree(LEFT, allocated_map, &is_running, player);
+                    need_redraw = 1;
+                } else if (key_pressed == 'd') {
+                    last_required_position = movePlayerStageThree(RIGHT, allocated_map, &is_running, player);
+                    need_redraw = 1;
+                } else if (key_pressed == 'l') {
+                    is_running = 0;
+                    player->win = 0;
+                    need_redraw = 1;
+
                 }
 
-                openTerminalStageThree(terminals, requiredPosition, stage_three_sentences, &current_sentence_index, player);
+                openTerminalStageThree(
+                    terminal_states,
+                    last_required_position,
+                    stage_three_sentences,
+                    &current_sentence_index,
+                    player
+                );
 
-                if (requiredPosition == 'T') {
+                if (last_required_position == 'T') {
                     player->x = TELEPORT_EXIT_X;
                     player->y = TELEPORT_EXIT_Y;
-
-                    requiredPosition = stage_three_map_template[player->y][player->x];
+                    last_required_position = stage_three_map_template[player->y][player->x];
                 }
-
-                printMapStageThree(allocated_map, player, terminals, stage_three_sentences, &current_sentence_index, currentCamera, robot_r_y, robot_g_y, &running);
             }
 
-            int currentTime = getTimeDiff();
+            char player_map_char = stage_three_map_template[player->y][player->x];
 
-            if (currentTime - lastCameraSwitch >= 3000) {
-                resetIndexStageThree(&currentCamera, NUM_CAMERAS);
-                lastCameraSwitch = currentTime;
-                printMapStageThree(allocated_map, player, terminals, stage_three_sentences, &current_sentence_index, currentCamera, robot_r_y, robot_g_y, &running);
-            }
+            int player_hit_red_robot   = (player->x == robot_red_x   && player->y == robot_red_y);
+            int player_hit_green_robot = (player->x == robot_green_x && player->y == robot_green_y);
 
-            if (currentTime - lastRobotMove >= 500) {
-                int next_r_y = robot_r_y + robot_r_direction;
-
-                if (next_r_y < ROBOT_R_START_Y || next_r_y > ROBOT_R_END_Y || stage_three_map_template[next_r_y][robot_r_x] == '#') {
-                    robot_r_direction *= -1;
-                }
-                robot_r_y += robot_r_direction;
-
-                int next_g_y = robot_g_y + robot_g_direction;
-
-                if (next_g_y < ROBOT_G_START_Y || next_g_y > ROBOT_G_END_Y || stage_three_map_template[next_g_y][robot_g_x] == '#') {
-                    robot_g_direction *= -1;
-                }
-                robot_g_y += robot_g_direction;
-
-                lastRobotMove = currentTime;
-
-                printMapStageThree(allocated_map, player, terminals, stage_three_sentences, &current_sentence_index, currentCamera, robot_r_y, robot_g_y, &running);
-            }
-
-            char player_pos_char = stage_three_map_template[player->y][player->x];
-
-            if ((player->x == robot_r_x && player->y == robot_r_y) || (player->x == robot_g_x && player->y == robot_g_y)) {
+            if (player_hit_red_robot || player_hit_green_robot) {
                 player->score -= 20;
+                if (player->score < 0) player->score = 0;
+
                 player->x = 1;
                 player->y = 1;
-                resetIndexStageThree(&current_sentence_index, NUM_SENTENCES);
-                for (int i = 0; i < NUM_TERMINALS; i++) terminals[i] = -1;
             }
 
-            int caughtByProjection = (player_pos_char == 'w' && currentCamera == 0) ||
-                                     (player_pos_char == 'x' && currentCamera == 1) ||
-                                     (player_pos_char == 'y' && currentCamera == 2) ||
-                                     (player_pos_char == 'z' && currentCamera == 3);
+            int player_hit_projection_camera =
+                (player_map_char == 'w' && current_camera_index == 0) ||
+                (player_map_char == 'x' && current_camera_index == 1) ||
+                (player_map_char == 'y' && current_camera_index == 2) ||
+                (player_map_char == 'z' && current_camera_index == 3);
 
-            int caughtByFixedUnit = (player_pos_char == 'W' || player_pos_char == 'X' || player_pos_char == 'Y' || player_pos_char == 'Z');
+            int player_hit_fixed_camera =
+                (player_map_char == 'W' ||
+                 player_map_char == 'X' ||
+                 player_map_char == 'Y' ||
+                 player_map_char == 'Z');
 
-            if (caughtByProjection || caughtByFixedUnit) {
+            if (player_hit_projection_camera || player_hit_fixed_camera) {
                 player->score -= 7;
+                if (player->score < 0) player->score = 0;
 
-                player->x = 1;
-                player->y = 1;
-
-                resetIndexStageThree(&currentCamera, NUM_CAMERAS);
-                resetIndexStageThree(&current_sentence_index, NUM_SENTENCES);
-                for (int i = 0; i < NUM_TERMINALS; i++) terminals[i] = -1;
-            }
-
-            if (player_pos_char == 'o') {
                 player->x = 1;
                 player->y = 1;
             }
 
-            if (player_pos_char == 'F') {
-                player->score = 0;
-                player->x = 1;
-                player->y = 1;
-                resetIndexStageThree(&current_sentence_index, NUM_SENTENCES);
-                for (int i = 0; i < NUM_TERMINALS; i++) terminals[i] = -1;
+            if (need_redraw) {
+                printMapStageThree(
+                    allocated_map,
+                    player,
+                    terminal_states,
+                    stage_three_sentences,
+                    &current_sentence_index,
+                    current_camera_index,
+                    robot_red_y,
+                    robot_green_y,
+                    &is_running
+                );
+                need_redraw = 0; 
             }
-
-            checkTimerStageThree(player, &running);
-            if (player->score < 0) { player->score = 0; }
         }
 
-        if (!running) break;
+        if (!is_running) break;
     }
 
     return 0;
 }
 
-void printMapStageThree(
-    char **map,
+
+void setupStageThree(
     Player *player,
-    int terminals[],
+    char **allocated_map,
+    int terminal_states[],
+    char stage_map[LINE][COLUMN + 1]
+) {
+    player->x = 1;
+    player->y = 1;
+    player->win = 0;
+    player->score = 0;
+
+    for (int i = 0; i < LINE; i++) {
+        strcpy(allocated_map[i], stage_map[i]);
+    }
+
+    for (int i = 0; i < NUM_TERMINALS; i++) {
+        terminal_states[i] = -1;
+    }
+}
+
+
+void resetIndexStageThree(int *current_index, int total) {
+    *current_index = (*current_index + 1) % total;
+}
+
+
+char movePlayerStageThree(
+    MoveDirection direction,
+    char **allocated_map,
+    int *is_running,
+    Player *player
+) {
+    (void)allocated_map;
+    (void)is_running;
+
+    int next_x = player->x;
+    int next_y = player->y;
+
+    if (direction == UP) next_y--;
+    else if (direction == DOWN) next_y++;
+    else if (direction == LEFT) next_x--;
+    else if (direction == RIGHT) next_x++;
+
+    if (next_x < 0 || next_x >= COLUMN || next_y < 0 || next_y >= LINE) {
+        return '#';
+    }
+
+    char next_map_char = stage_three_map_template[next_y][next_x];
+
+    if (next_map_char == '#') {
+        return next_map_char;
+    }
+
+    player->x = next_x;
+    player->y = next_y;
+
+    return next_map_char;
+}
+
+
+void printMapStageThree(
+    char **allocated_map,
+    Player *player,
+    int terminal_states[],
     StageThreeSentence sentences[],
     int *current_sentence_index,
-    int currentCamera,
-    int robot_r_y,
-    int robot_g_y,
-    int *running
+    int current_camera_index,
+    int robot_red_y,
+    int robot_green_y,
+    int *is_running
 ) {
+    (void)allocated_map;
+    (void)is_running;
+
     screenClear();
 
-    const int ROBOT_R_FIXED_X = 29;
-    const int ROBOT_G_FIXED_X = 5;
+    const int ROBOT_RED_FIXED_X   = 29;
+    const int ROBOT_GREEN_FIXED_X = 5;
 
     int offsetX = (MAXX - COLUMN - 10) / 2;
     int offsetY = (MAXY - LINE) / 2;
 
-    int all_solved = 1;
+    int all_terminals_solved = 1;
     for (int i = 0; i < NUM_TERMINALS; i++) {
-        if (terminals[i] != sentences[*current_sentence_index].terminals[i]) {
-            all_solved = 0;
+        if (terminal_states[i] != 1) {
+            all_terminals_solved = 0;
             break;
         }
     }
 
-    for (int y = 0; y < LINE; y++) {
-        screenGotoxy(offsetX + 1, offsetY + y + 1);
+    for (int map_y = 0; map_y < LINE; map_y++) {
+        screenGotoxy(offsetX + 1, offsetY + map_y + 1);
 
-        for (int x = 0; x < COLUMN; x++) {
-            char map_char = stage_three_map_template[y][x];
-            char char_to_print = map_char;
+        for (int map_x = 0; map_x < COLUMN; map_x++) {
+            char base_map_char = stage_three_map_template[map_y][map_x];
+            char char_to_print = base_map_char;
 
-            int is_player_pos = (x == player->x && y == player->y);
-            int is_robot_r_pos = (x == ROBOT_R_FIXED_X && y == robot_r_y);
-            int is_robot_g_pos = (x == ROBOT_G_FIXED_X && y == robot_g_y);
-            int is_robot_pos = is_robot_r_pos || is_robot_g_pos;
+            int is_player_position      = (map_x == player->x && map_y == player->y);
+            int is_robot_red_position   = (map_x == ROBOT_RED_FIXED_X   && map_y == robot_red_y);
+            int is_robot_green_position = (map_x == ROBOT_GREEN_FIXED_X && map_y == robot_green_y);
+            int is_any_robot_position   = is_robot_red_position || is_robot_green_position;
 
-            if (is_player_pos && is_robot_pos) {
+            if (is_player_position && is_any_robot_position) {
                 char_to_print = 'O';
                 screenSetColor(RED, WHITE);
-            } else if (is_player_pos) {
+            } else if (is_player_position) {
                 char_to_print = 'O';
                 screenSetColor(GREEN, BLACK);
-            } else if (is_robot_r_pos) {
+            } else if (is_robot_red_position) {
                 char_to_print = 'R';
                 screenSetColor(WHITE, BLACK);
-            } else if (is_robot_g_pos) {
+            } else if (is_robot_green_position) {
                 char_to_print = 'G';
                 screenSetColor(MAGENTA, BLACK);
             } else {
-                char_to_print = map_char;
+                char_to_print = base_map_char;
 
                 if (char_to_print == '#') {
                     screenSetColor(BLUE, BLUE);
                 } else if (char_to_print == 'S') {
-                    screenSetColor(BLUE, all_solved ? GREEN : RED);
+                    screenSetColor(BLUE, all_terminals_solved ? GREEN : RED);
                 } else if (char_to_print >= 'A' && char_to_print <= 'D') {
-                    int index = char_to_print - 'A';
-                    if (terminals[index] == -1) screenSetColor(RED, YELLOW);
-                    else screenSetColor(BLUE, GREEN);
+                    int terminal_index = char_to_print - 'A';
+                    if (terminal_states[terminal_index] == 1)
+                        screenSetColor(BLUE, GREEN);
+                    else
+                        screenSetColor(RED, YELLOW);
                 } else if (char_to_print == 'T') {
                     screenSetColor(CYAN, BLACK);
                 } else if (char_to_print == 'P') {
                     screenSetColor(CYAN, WHITE);
-                } else if (char_to_print == 'W' || char_to_print == 'X' || char_to_print == 'Y' || char_to_print == 'Z') {
+                } else if (char_to_print == 'W' ||
+                           char_to_print == 'X' ||
+                           char_to_print == 'Y' ||
+                           char_to_print == 'Z') {
                     screenSetColor(BLUE, BROWN);
                 } else if (char_to_print == 'w') {
-                    screenSetColor(currentCamera == 0 ? RED : BLACK, currentCamera == 0 ? RED : BLACK);
+                    screenSetColor(
+                        current_camera_index == 0 ? RED : BLACK,
+                        current_camera_index == 0 ? RED : BLACK
+                    );
                 } else if (char_to_print == 'x') {
-                    screenSetColor(currentCamera == 1 ? RED : BLACK, currentCamera == 1 ? RED : BLACK);
+                    screenSetColor(
+                        current_camera_index == 1 ? RED : BLACK,
+                        current_camera_index == 1 ? RED : BLACK
+                    );
                 } else if (char_to_print == 'y') {
-                    screenSetColor(currentCamera == 2 ? RED : BLACK, currentCamera == 2 ? RED : BLACK);
+                    screenSetColor(
+                        current_camera_index == 2 ? RED : BLACK,
+                        current_camera_index == 2 ? RED : BLACK
+                    );
                 } else if (char_to_print == 'z') {
-                    screenSetColor(currentCamera == 3 ? RED : BLACK, currentCamera == 3 ? RED : BLACK);
-                } else if (char_to_print == 'o') {
-                    screenSetColor(BLACK, WHITE);
-                } else if (char_to_print == 'F') {
-                    screenSetColor(WHITE, RED);
+                    screenSetColor(
+                        current_camera_index == 3 ? RED : BLACK,
+                        current_camera_index == 3 ? RED : BLACK
+                    );
                 } else {
                     screenSetColor(BLACK, BLACK);
                     char_to_print = ' ';
@@ -339,23 +508,17 @@ void printMapStageThree(
 
             putchar(char_to_print);
 
-            if (map_char == 'S' && all_solved && is_player_pos) {
+            if (base_map_char == 'S' && all_terminals_solved && is_player_position) {
                 player->win = 1;
-                *running = 0;
             }
         }
     }
 
 
-    screenGotoxy(offsetX + COLUMN + 4, offsetY + LINE - 8);
-    printf("Score: %.2f", player->score);
-    screenGotoxy(offsetX + COLUMN + 4, offsetY + LINE - 7);
-    printf("Senha: %s", sentences[*current_sentence_index].sentence);
-
     char terminal_labels[] = {'A', 'B', 'C', 'D'};
     for (int i = 0; i < NUM_TERMINALS; i++) {
         screenGotoxy(offsetX + COLUMN + 4, offsetY + LINE - 6 + i);
-        if (terminals[i] == sentences[*current_sentence_index].terminals[i]) {
+        if (terminal_states[i] == 1) {
             screenSetColor(BLACK, GREEN);
             printf("Terminal %c: OK ", terminal_labels[i]);
         } else {
@@ -365,15 +528,13 @@ void printMapStageThree(
     }
 
     screenGotoxy(offsetX + COLUMN + 4, offsetY + LINE - 6 + NUM_TERMINALS);
-    if (all_solved) {
+    if (all_terminals_solved) {
         screenSetColor(GREEN, GREEN);
         printf("EXIT OPENED! ");
     } else {
         screenSetColor(BLUE, BLUE);
         printf("EXIT LOCKED. ");
     }
-
-    checkTimerStageThree(player, running);
 
     int boxX = offsetX + COLUMN + 4;
     int boxY = offsetY + 2;
@@ -382,142 +543,103 @@ void printMapStageThree(
 
     screenGotoxy(boxX, boxY);
     printf("+------------------------------+");
-
     screenGotoxy(boxX, boxY + 1);
-    printf("| GUIA DO MAPA                |");
-
+    printf("| MAP GUIDE                   |");
     screenGotoxy(boxX, boxY + 2);
-    printf("| (R) Robô Vermelho -> Reinicia |");
-
+    printf("| R: Red Robot  (hit = -20)   |");
     screenGotoxy(boxX, boxY + 3);
-    printf("| (G) Robô Verde   -> Reinicia |");
-
+    printf("| G: Green Robot(hit = -20)   |");
     screenGotoxy(boxX, boxY + 4);
-    printf("| Cameras -> -7 se te virem    |");
-
+    printf("| Cameras: -7 pts if seen     |");
     screenGotoxy(boxX, boxY + 5);
-    printf("| Dica: fique imóvel e protegido|");
-
+    printf("| Terminals A/B/C/D -> 0 or 1 |");
     screenGotoxy(boxX, boxY + 6);
-    printf("| Terminais A/B/C/D -> 0 ou 1  |");
-
+    printf("| T: Teleport                 |");
     screenGotoxy(boxX, boxY + 7);
-    printf("| (T) -> Teleporte             |");
-
+    printf("| S: Stage exit               |");
     screenGotoxy(boxX, boxY + 8);
-    printf("| (S) -> Saída do estágio       |");
-
-    screenGotoxy(boxX, boxY + 9);
     printf("+------------------------------+");
 
-    screenSetColor(BLACK, BLUE);
-
-
     screenUpdate();
 }
 
-void setupStageThree(
-    Player *player,
-    char **allocated_map,
-    int terminals[],
-    char stage_map[LINE][COLUMN + 1]
+
+void openTerminalStageThree(
+    int terminal_states[],
+    char terminal_position,
+    StageThreeSentence sentences[],
+    int *current_sentence_index,
+    Player *player
 ) {
-    player->x = 1;
-    player->y = 1;
+    if (terminal_position < 'A' || terminal_position > 'D') return;
 
-    for (int i = 0; i < LINE; i++) strcpy(allocated_map[i], stage_map[i]);
-    player->win = 0;
+    int terminal_index = terminal_position - 'A';
 
-    for (int i = 0; i < NUM_TERMINALS; i++) {
-        terminals[i] = -1;
-    }
-}
+    int is_correct = openTerminalTruthTableModelStageThree(sentences, terminal_position);
 
-void resetIndexStageThree(int *current_index, int total) {
-    *current_index = (*current_index + 1) % total;
-    screenUpdate();
-}
-
-char movePlayer_stageThree(
-    MoveDirection direction,
-    char **map,
-    int *running,
-    Player *player,
-    char *lastChar
-) {
-    int x = player->x;
-    int y = player->y;
-
-    if (direction == UP) y--;
-    else if (direction == DOWN) y++;
-    else if (direction == LEFT) x--;
-    else if (direction == RIGHT) x++;
-
-    if (x < 0 || x >= COLUMN || y < 0 || y >= LINE) return '#';
-
-    char next = stage_three_map_template[y][x];
-
-    if (next == '#') {
-        return next;
-    }
-
-    player->x = x;
-    player->y = y;
-
-    return next;
-}
-
-void openTerminalStageThree(int terminals[], char requiredTerminal,
-    StageThreeSentence sentences[], int *current_sentence_index, Player *player) {
-
-    if (requiredTerminal < 'A' || requiredTerminal > 'D') return;
-
-    int index = requiredTerminal - 'A';
-
-    int value = open_terminal_modelStageThree(requiredTerminal);
-
-    if (value == sentences[*current_sentence_index].terminals[index]) {
-        terminals[index] = value;
+    if (is_correct) {
+        terminal_states[terminal_index] = 1;
         player->score += 10;
     } else {
-        resetIndexStageThree(current_sentence_index, NUM_SENTENCES);
-        for (int i = 0; i < NUM_TERMINALS; i++) terminals[i] = -1;
-        screenSetColor(RED, RED);
+        player->score -= 5;
+        if (player->score < 0) player->score = 0;
+        (void)current_sentence_index; 
     }
 }
 
-void checkTimerStageThree(Player *player, int *running) {
-    int elapsed = getTimeDiff();
-    screenGotoxy(MAXX - 15, MAXY - 12);
-    printf("Tempo: %d s", elapsed / 1000);
-}
 
-int open_terminal_modelStageThree(char terminal) {
-    int terminal_value = -1;
+int openTerminalTruthTableModelStageThree(
+    StageThreeSentence sentences[],
+    char terminal_position
+) {
+    if (terminal_position < 'A' || terminal_position > 'D') return 0;
+
+    int sentence_index = terminal_position - 'A';
+    int user_outputs[TRUTH_ROWS_ABC];
 
     keyboardDestroy();
-
     screenClear();
     screenGotoxy(1, 1);
     screenSetColor(BLACK, BLUE);
-    printf("Digite o valor do terminal %c: ", terminal);
-    fflush(stdout);
 
-    int ch;
-    do {
-        ch = getchar();
-    } while (ch != '0' && ch != '1' && ch != EOF);
+    printf("Terminal %c\n", terminal_position);
+    printf("| A | B | C |   %s  |\n", sentences[sentence_index].sentence);
+    printf("----------------------\n");
 
-    if (ch == EOF) ch = '0';
-    terminal_value = ch - '0';
+    for (int i = 0; i < TRUTH_ROWS_ABC; i++) {
+        int value_a = sentences[sentence_index].inputs[i][0];
+        int value_b = sentences[sentence_index].inputs[i][1];
+        int value_c = sentences[sentence_index].inputs[i][2];
 
-    printf("%d\n", terminal_value);
-    fflush(stdout);
+        printf("| %d | %d |   %d   | ", value_a, value_b, value_c);
+        fflush(stdout);
 
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
+        int input_char;
+        do {
+            input_char = getchar();
+        } while (input_char != '0' && input_char != '1' && input_char != EOF);
+
+        if (input_char == EOF) input_char = '0';
+
+        user_outputs[i] = input_char - '0';
+        fflush(stdout);
+
+        int tmp;
+        while ((tmp = getchar()) != '\n' && tmp != EOF) {}
+    }
+
+    int is_correct = 1;
+    for (int i = 0; i < TRUTH_ROWS_ABC; i++) {
+        if (user_outputs[i] != sentences[sentence_index].outputs[i]) {
+            is_correct = 0;
+            break;
+        }
+    }
+
+    printf("\n\nPress ENTER to continue...");
+    int tmp;
+    while ((tmp = getchar()) != '\n' && tmp != EOF) {}
 
     keyboardInit();
-
-    return terminal_value;
+    return is_correct;
 }
