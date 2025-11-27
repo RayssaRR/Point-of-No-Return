@@ -7,7 +7,7 @@
 #include "screen.h"
 #include "keyboard.h"
 
-#define delay_dialogue 20000
+#define delay_dialogue 30000
 
 void showInitialMenu(int *running, int *dbreak) {
     screenClear();
@@ -58,7 +58,6 @@ void pixie_speak(const char *text) {
     screenSetColor(WHITE, BLACK);
     printf(" ");
     type_effect(text, delay_dialogue);
-    printf("\n");
 }
 
 void dialogue_zero() {
