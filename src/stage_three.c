@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "miniaudio.h"
 #include "sounds.h"
 #include "screen.h"
 #include "timer.h"
@@ -44,11 +45,11 @@ char stage_Three_map[LINE][COLUMN + 1] = {
     "#.#x###x###C#.#.#######.#.#X###.#.#.####",
     "#xxx#...#.###.#.#.....#.#.#.#.....#...##",
     "#xW.#.###.#.#.#.#.###.#.#.#.#.###.######",
-    "#o#.#...#.#.#.#.#.#.#.#.....#......#..##",
+    "#o#.#.#...#.#.#.#.#.#.#.....#......#..##",
     "#.#.#.#.###.#.#.#...#...#Y#.#.#######..#",
     "#.#.#.#.........###.#.###.#..........#.#",
     "#.#.#.#.#.###.###.#.#.#.#.#.########...#",
-    "#.#.#...#.#...#B#.#w..#.#.#..........#.#",
+    "#.#.#...#.#...#B#.#w..#^#.#..........#.#",
     "#.#.#.X.#.#.##X.#w#w#.#.#.#.#######.####",
     "#.#.#.#.#.#.#...#w.w#.#.#.#^....o.Z.xxx#",
     "#.#.#.#.#.#.#.o##w###X#.############x###",
@@ -167,6 +168,9 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
             screenSetColor(RED, RED);
         }
 
+        if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
+            terminals[1] == sentences[*current_sentence_index].terminals[1] &&
+            terminals[2] == sentences[*current_sentence_index].terminals[2])
         {
             pass_stage_sound(&engineStageThree);
         }
@@ -372,18 +376,12 @@ void printMapThree(
     printf("| Cameras -> -7 se te ver      |");
 
     screenGotoxy(boxX, boxY + 5);
-    printf("| Dica: fique imóvel e a       |");
-
-    screenGotoxy(boxX, boxY + 6);
-    printf("| magia da Pixie te protege    |");
-
-    screenGotoxy(boxX, boxY + 7);
     printf("| A/B/C -> Digite 0 ou 1       |");
 
-    screenGotoxy(boxX, boxY + 8);
+    screenGotoxy(boxX, boxY + 6);
     printf("| (S) -> Saida                 |");
 
-    screenGotoxy(boxX, boxY + 9);
+    screenGotoxy(boxX, boxY + 7);
     printf("+------------------------------+");
 
     screenUpdate();
@@ -430,12 +428,24 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
     if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z' || map[y][x] == 'o' || map[y][x] == '^')
     {
         walk_sound(&engineStageThree);
+        int isOpen = terminals[0] == sentencesThree[*current_sentence_index].terminals[0] &&
+                     terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
+                     terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
 
+        (void)isOpen;
+
+        thorns_sound(&engineStageThree);
         if (next == '^')
         {
-            *penalty += 5;
+            *penalty -= 5;
+
+            stage_Three_map[y][x] = '.';
+            map[y][x] = '.';
+
+            return next;
         }
 
+        falling_sound(&engineStageThree);
         if (next == 'o')
         {
             map[player->y][player->x] = stage_Three_map[player->y][player->x];
@@ -447,25 +457,20 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
             return next;
         }
 
+        pass_stage_sound(&engineStageThree);
         if (map[y][x] == 'S')
         {
-            int isOpen = terminals[0] == sentencesThree[*current_sentence_index].terminals[0] &&
-                         terminals[1] == sentencesThree[*current_sentence_index].terminals[1] &&
-                         terminals[2] == sentencesThree[*current_sentence_index].terminals[2];
-
-            if (isOpen)
-            {
-                *running = 0;
-            }
+            player->win = 1;
+            *running = 0;
         }
 
-        *lastChar = '.';
+        *lastChar = stage_Three_map[player->y][player->x] == 'O' ? '.' : stage_Three_map[player->y][player->x];
+
         map[player->y][player->x] = *lastChar;
 
         player->x = x;
         player->y = y;
-
-        map[y][x] = 'O';
+        map[player->y][player->x] = 'O';
     }
 
     return next;
