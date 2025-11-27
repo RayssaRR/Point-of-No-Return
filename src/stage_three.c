@@ -60,13 +60,13 @@ SentenceModel sentencesThree[4] = {
     {"¬A ∨ (B ∧ C)", {0, 1, 1}},
     {"A ⊕ C", {1, 0, 1}}};
 
-ma_engine engine;
+ma_engine engineStageThree;
 
 int stage_three(char **allocated_map, Player *player, int *penalty)
 {
     ma_result result;
 
-    result = ma_engine_init(NULL, &engine);
+    result = ma_engine_init(NULL, &engineStageThree);
     if (result != MA_SUCCESS)
     {
         printf("Erro ao inicializar o motor de áudio (miniaudio).\n");
@@ -132,7 +132,7 @@ int stage_three(char **allocated_map, Player *player, int *penalty)
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ)
             {
-                caught_by_cam_sound(&engine);
+                caught_by_cam_sound(&engineStageThree);
                 resetIndexThree(&currentCamera, 4);
                 resetIndexThree(&current_sentence_index, 2);
                 printMapThree(allocated_map, player, terminals, &camera, sentencesThree, &current_sentence_index, currentCamera);
@@ -155,27 +155,27 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
         int value = open_terminal_model_Three(requiredTerminal);
         if (value == sentences[*current_sentence_index].terminals[index])
         {
-            terminal_correct_value_sound(&engine);
+            terminal_correct_value_sound(&engineStageThree);
             terminals[index] = value;
             player->score += 10;
         }
         else
         {
-            terminal_wrong_value_sound(&engine);
+            terminal_wrong_value_sound(&engineStageThree);
             resetIndexThree(current_sentence_index, 2);
             terminals[0] = terminals[1] = terminals[2] = -1;
             screenSetColor(RED, RED);
         }
 
         {
-            pass_stage_sound(&engine);
+            pass_stage_sound(&engineStageThree);
         }
     }
 }
 
 int open_terminal_model_Three(char terminal)
 {
-    open_terminal_sound(&engine);
+    open_terminal_sound(&engineStageThree);
     int terminal_value = -1;
 
     keyboardDestroy();
@@ -429,7 +429,7 @@ char movePlayerThree(MoveDirection direction, char **map, int *running, Player *
 
     if (map[y][x] == '.' || map[y][x] == 'S' || map[y][x] == 'x' || map[y][x] == 'w' || map[y][x] == 'y' || map[y][x] == 'z' || map[y][x] == 'o' || map[y][x] == '^')
     {
-        walk_sound(&engine);
+        walk_sound(&engineStageThree);
 
         if (next == '^')
         {
