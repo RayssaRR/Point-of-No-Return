@@ -138,14 +138,12 @@ char movePlayer_stageTwo(
                    terminals[1] == stage_two_sentences[*current_sentence_index].terminals[1] &&
                    terminals[2] == stage_two_sentences[*current_sentence_index].terminals[2];
 
-      if (map[y][x] == 'S') {
-        if (isOpen) {
-          pass_stage_sound(&engine_StageTwo);
-          *running = 0;
-        } else {
-          door_locked_sound(&engine_StageTwo);
-          return next;
-        }
+      if (isOpen) {
+        pass_stage_sound(&engine_StageTwo);
+        *running = 0;
+      } else {
+        door_locked_sound(&engine_StageTwo);
+        return next;
       }
     }
 

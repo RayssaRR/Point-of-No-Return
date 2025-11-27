@@ -202,3 +202,14 @@ void dialogue_final() {
 
   readch();
 }
+
+void updateScore(Player *player, int points) {
+    if (player != NULL) {
+      int newScore = player->score + points;
+      if (newScore < 0) {
+        player->score = 0;
+      } else {
+        player->score = newScore;
+      }
+    }
+}
