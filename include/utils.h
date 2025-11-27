@@ -12,4 +12,14 @@ void showInitialMenu(int *running, int *dbreak);
 
 void inputUsername(char username[]);
 
+void type_effect(const char *text, useconds_t delay);
+
+void pixie_speak(const char *text);
+
+void dialogue_zero();
+void dialogue_one();
+void dialogue_two();
+void dialogue_three();
+void dialogue_final();
+
 #endif
