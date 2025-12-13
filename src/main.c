@@ -10,6 +10,9 @@
 #include "stage_two.h"
 #include "stage_three.h"
 #include "utils.h"
+#include "ranking.h"
+#include "main_menu.h"
+
 
 void free_map_memory(char **map);
 
@@ -50,13 +53,40 @@ int main() {
       allocated_map[i] = (char *) calloc(COLUMN + 1, sizeof(char));
   }
 
-  ma_sound_start(&menu_music);
-  showInitialMenu(&running, &stop);
+int option = -1;
 
-  if (stop == 0) return 0;
+while (option != 0) {
 
-  inputUsername(username);
-  ma_sound_stop(&menu_music);
+    ma_sound_start(&menu_music);
+    showMainMenu(&option);
+    ma_sound_stop(&menu_music);
+
+    if (option == 0) {
+        return 0; 
+    }
+
+    if (option == 2) {
+        showRankingScreen();
+        printf("\nPressione ENTER para voltar ao menu...");
+        getchar(); getchar();
+        continue;
+    }
+
+    if (option == 1) {
+        ma_sound_start(&menu_music);
+
+        showInitialMenu(&running, &stop);
+        if (stop == 0) return 0;
+
+        inputUsername(username);
+        ma_sound_stop(&menu_music);
+
+        break; 
+    }
+
+    printf("Opcao invalida!\n");
+}
+
 
   timerInit(0);
 
@@ -83,8 +113,14 @@ int main() {
   screenGotoxy(1,1);
   screenSetColor(BLACK, BLUE);
   printf("Obrigado por jogar Point of No Return, %s!", username);
-  printf("Sua pontuação foi: %d pontos!\n", player.score);
+  printf("\nSua pontuação foi: %d pontos!\n", player.score);
+  
+  addScore(username, player.score);
 
+  screenSetColor(BLACK, BLUE);
+  printf("\n\nPontuação salva no ranking!\n");
+  printf("Pressione ENTER para continuar...");
+  getchar(); getchar();
   //EXIT
 
   free_map_memory(allocated_map);

@@ -64,7 +64,7 @@ void setupStageTwo(
     char stage_map[LINE][COLUMN + 1]
 );
 
-void openTerminalStageTwo(int terminals[], char terminal, StageTwoSentence stage_two_sentences[], int *current_sentence_index, Player *player);
+void openTerminalStageTwo(int terminals[], int terminalScored[], char terminal, StageTwoSentence stage_two_sentences[], int *current_sentence_index, Player *player);
 int open_terminal_modelStageTwo(char terminal);
 void resetIndexStageTwo(int *item, int total);
 
@@ -167,7 +167,7 @@ int stage_two(char **allocated_map, Player *player) {
     int camera = 0;
     int currentCamera = 0;
     int terminals[3] = {-1, -1, -1};
-
+    int terminalScored[3] = {0, 0, 0};
     char requiredPosition = '.';
     char lastChar = '.';
     int ch = 0;
@@ -203,7 +203,7 @@ int stage_two(char **allocated_map, Player *player) {
                 else if (ch == 'd') requiredPosition = movePlayer_stageTwo(RIGHT, allocated_map, &running, player, &lastChar, terminals, &current_sentence_index);
                 else if (ch == 'l') { running = 0; }
                
-               openTerminalStageTwo(terminals, requiredPosition, stage_two_sentences, &current_sentence_index, player);
+               openTerminalStageTwo(terminals, terminalScored, requiredPosition, stage_two_sentences, &current_sentence_index, player);
 
                 printMapStageTwo(allocated_map, player, terminals, &camera,
                          stage_two_sentences, &current_sentence_index,
@@ -233,9 +233,16 @@ int stage_two(char **allocated_map, Player *player) {
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ) {
                 caught_by_cam_sound(&engine_StageTwo);
+                updateScore(player, -5);
+
+                terminals[0] = -1;
+                terminals[1] = -1;
+                terminals[2] = -1;
+
                 resetIndexStageTwo(&currentCamera, 4);
                 resetIndexStageTwo(&current_sentence_index, 3);
-                resetIndexStageTwo(terminals, 3);
+                
+                printMapStageTwo(allocated_map, player, terminals, &camera, stage_two_sentences, &current_sentence_index, currentCamera);
             }
         }
 
@@ -244,7 +251,7 @@ int stage_two(char **allocated_map, Player *player) {
 
     return 0;
 }
-void openTerminalStageTwo(int terminals[], char requiredTerminal,
+void openTerminalStageTwo(int terminals[], int terminalScored[], char requiredTerminal,
 StageTwoSentence sentences[], int *current_sentence_index, Player *player) {
 
 int index = requiredTerminal - 'A';  // A=0, B=1, C=2
@@ -255,7 +262,12 @@ if (index >= 0 && index < 3) {
     if (value == sentences[*current_sentence_index].terminals[index]) {
         terminal_correct_value_sound(&engine_StageTwo);
         terminals[index] = value;
+
+        if(!terminalScored[index]){
         updateScore(player, 10);
+        terminalScored[index] = 1;
+      }
+
     } else {
         terminal_wrong_value_sound(&engine_StageTwo);
         resetIndexStageTwo(current_sentence_index, 3);
@@ -263,6 +275,7 @@ if (index >= 0 && index < 3) {
         terminals[1] = -1;
         terminals[2] = -1;
         screenSetColor(RED, RED);
+        updateScore(player, -5);
     }
      if (terminals[0] == sentences[*current_sentence_index].terminals[0] &&
             terminals[1] == sentences[*current_sentence_index].terminals[1] &&
@@ -283,7 +296,7 @@ int open_terminal_modelStageTwo(char terminal) {
     screenClear();
     screenGotoxy(1,1);
     screenSetColor(BLACK, BLUE);
-    printf("Digite o valor do terminal %c ", terminal);
+    printf("Digite o valor do terminal %c: ", terminal);
     fflush(stdout);
 
     char ch;
@@ -440,28 +453,25 @@ void printMapStageTwo(
 
     // borda superior
     screenGotoxy(boxX, boxY);
-    printf("+------------------------------+");
-
+    printf("╔═══════════════════════════════════════════╗");
     screenGotoxy(boxX, boxY + 1);
-    printf("| GUIA DO MAPA                |");
-
+    printf("║  GUIA DO MAPA                             ║");
     screenGotoxy(boxX, boxY + 2);
-    printf("| (o) Buraco  -> Reinicia     |");
-
+    printf("║  (o) Buraco  -> Retorna ao início do mapa ║");
     screenGotoxy(boxX, boxY + 3);
-    printf("| (^) Espinho -> -5 pontos    |");
-
+    printf("║  (^) Espinho -> -5 pontos                 ║");
     screenGotoxy(boxX, boxY + 4);
-    printf("| Cameras -> reseta A, B, C   |");
-
+    printf("║  Cameras -> Reseta os terminais A, B, C   ║");
     screenGotoxy(boxX, boxY + 5);
-    printf("| A/B/C -> Digite 0 ou 1      |");
-
+    printf("║  A/B/C -> Digite 0 ou 1                   ║");
     screenGotoxy(boxX, boxY + 6);
-    printf("| (S)  ->      Saida          |");
-
+    printf("║  Terminal correto -> +10 pontos           ║");
     screenGotoxy(boxX, boxY + 7);
-    printf("+------------------------------+");
+    printf("║  Terminal incorreto -> -5 pontos          ║");
+    screenGotoxy(boxX, boxY + 8);
+    printf("║  (S)  -> Saida                            ║");
+    screenGotoxy(boxX, boxY + 9);
+    printf("╚═══════════════════════════════════════════╩");
 
     screenUpdate();
 }

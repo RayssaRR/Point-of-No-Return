@@ -8,6 +8,8 @@
 #include "keyboard.h"
 #include "utils.h"
 
+
+
 typedef struct
 {
   char sentence[200];
@@ -28,7 +30,7 @@ void setupStage(
     int terminals[],
     int *camera,
     char stage_map[LINE][COLUMN + 1]);
-void openTerminal(int terminals[], char terminal, SentenceModel sentences[], int *current_sentence_index, Player *player);
+void openTerminal(int terminals[], int terminalScored[], char terminal, SentenceModel sentences[], int *current_sentence_index, Player *player);
 int open_terminal_model(char terminal);
 void resetIndex(int *item, int total);
 char movePlayer(
@@ -90,6 +92,7 @@ int stage_one(char **allocated_map, Player *player)
   int running = 1;
   int camera = 0;
   int terminals[3] = {-1, -1, -1};
+  int terminalScored[3] = {0, 0, 0};
   char requiredPosition = '.';
   char lastChar = '.';
 
@@ -129,7 +132,7 @@ int stage_one(char **allocated_map, Player *player)
           running = 0;
         }
 
-        openTerminal(terminals, requiredPosition, sentences, &current_sentence_index, player);
+        openTerminal(terminals, terminalScored, requiredPosition, sentences, &current_sentence_index, player);
         printMap(allocated_map, player, terminals, &camera, sentences, &current_sentence_index, currentCamera);
       }
 
@@ -147,6 +150,11 @@ int stage_one(char **allocated_map, Player *player)
       {
         updateScore(player, -5);
         caught_by_cam_sound(&engine);
+
+        terminals[0] = -1;
+        terminals[1] = -1;
+        terminals[2] = -1;
+
         resetIndex(&currentCamera, 4);
         resetIndex(&current_sentence_index, 2);
         printMap(allocated_map, player, terminals, &camera, sentences, &current_sentence_index, currentCamera);
@@ -160,7 +168,7 @@ int stage_one(char **allocated_map, Player *player)
   return 0;
 }
 
-void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index, Player *player)
+void openTerminal(int terminals[],  int terminalScored[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index, Player *player)
 {
   int index = requiredTerminal - 'A';
 
@@ -171,7 +179,12 @@ void openTerminal(int terminals[], char requiredTerminal, SentenceModel sentence
     {
       terminal_correct_value_sound(&engine);
       terminals[index] = value;
-      updateScore(player, 10);
+
+      if(!terminalScored[index]){
+        updateScore(player, 10);
+        terminalScored[index] = 1;
+      }
+
     }
     else
     {
@@ -203,7 +216,7 @@ int open_terminal_model(char terminal)
   screenClear();
   screenGotoxy(1, 1);
   screenSetColor(BLACK, BLUE);
-  printf("Digite o valor do terminal %c ", terminal);
+  printf("Digite o valor do terminal %c: ", terminal);
   fflush(stdout);
 
   char ch;
@@ -409,6 +422,30 @@ void printMap(
   {
     screenSetColor(BLUE, BLUE);
   }
+
+    int boxX = COLUMN + 20;   
+    int boxY = 13;
+
+    screenSetColor(BLACK, BLUE);
+
+    // borda superior
+    screenGotoxy(boxX, boxY);
+    printf("╔═══════════════════════════════════════════╗");
+    screenGotoxy(boxX, boxY + 1);
+    printf("║  GUIA DO MAPA                             ║");
+    screenGotoxy(boxX, boxY + 4);
+    printf("║  Cameras -> Reseta os terminais A, B, C   ║");
+    screenGotoxy(boxX, boxY + 5);
+    printf("║  A/B/C -> Digite 0 ou 1                   ║");
+    screenGotoxy(boxX, boxY + 6);
+    printf("║  Terminal correto -> +10 pontos           ║");
+    screenGotoxy(boxX, boxY + 7);
+    printf("║  Terminal incorreto -> -5 pontos          ║");
+    screenGotoxy(boxX, boxY + 8);
+    printf("║  (S)  -> Saida                            ║");
+    screenGotoxy(boxX, boxY + 9);
+    printf("╚═══════════════════════════════════════════╩");
+
   screenUpdate();
 }
 

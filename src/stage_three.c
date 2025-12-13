@@ -28,7 +28,7 @@ void setupStageThree(
     int *camera,
     char stage_map[LINE][COLUMN + 1]);
 
-void openTerminalThree(int terminals[], char terminal, SentenceModel sentences[], int *current_sentence_index, Player *player);
+void openTerminalThree(int terminals[], int terminalScored[], char terminal, SentenceModel sentences[], int *current_sentence_index, Player *player);
 int open_terminal_model_Three(char terminal);
 void resetIndexThree(int *item, int total);
 char movePlayerThree(MoveDirection direction, char **map, int *running, Player *player, char *lastChar, int terminals[],
@@ -83,6 +83,7 @@ int stage_three(char **allocated_map, Player *player)
     int running = 1;
     int camera = 0;
     int terminals[3] = {-1, -1, -1};
+    int terminalScored[3] = {0, 0, 0};
     char requiredPos = '.';
     char lastChar = '.';
 
@@ -114,7 +115,7 @@ int stage_three(char **allocated_map, Player *player)
                     running = 0;
                 }
 
-                openTerminalThree(terminals, requiredPos, sentencesThree, &current_sentence_index, player);
+                openTerminalThree(terminals, terminalScored, requiredPos, sentencesThree, &current_sentence_index, player);
                 printMapThree(allocated_map, player, terminals, &camera, sentencesThree, &current_sentence_index, currentCamera);
             }
 
@@ -131,10 +132,16 @@ int stage_three(char **allocated_map, Player *player)
 
             if (caughtByW || caughtByX || caughtByY || caughtByZ)
             {
-                updateScore(player, -5);
                 caught_by_cam_sound(&engineStageThree);
+                updateScore(player, -5);
+                
+                terminals[0] = -1;
+                terminals[1] = -1;
+                terminals[2] = -1;
+
                 resetIndexThree(&currentCamera, 4);
                 resetIndexThree(&current_sentence_index, 2);
+
                 printMapThree(allocated_map, player, terminals, &camera, sentencesThree, &current_sentence_index, currentCamera);
             }
         }
@@ -146,7 +153,7 @@ int stage_three(char **allocated_map, Player *player)
     return 0;
 }
 
-void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index, Player *player)
+void openTerminalThree(int terminals[], int terminalScored[], char requiredTerminal, SentenceModel sentences[], int *current_sentence_index, Player *player)
 {
     int index = requiredTerminal - 'A';
 
@@ -157,7 +164,11 @@ void openTerminalThree(int terminals[], char requiredTerminal, SentenceModel sen
         {
             terminal_correct_value_sound(&engineStageThree);
             terminals[index] = value;
-            updateScore(player, 10);
+            if(!terminalScored[index]){
+                updateScore(player, 10);
+                terminalScored[index] = 1;
+            }
+
         }
         else
         {
@@ -187,7 +198,7 @@ int open_terminal_model_Three(char terminal)
     screenClear();
     screenGotoxy(1, 1);
     screenSetColor(BLACK, BLUE);
-    printf("Digite o valor do terminal %c ", terminal);
+    printf("Digite o valor do terminal %c: ", terminal);
     fflush(stdout);
 
     char ch;
@@ -363,32 +374,25 @@ void printMapThree(
     screenSetColor(BLACK, BLUE);
 
     screenGotoxy(boxX, boxY);
-    printf("+-------------------------------------+");
+    printf("╔═══════════════════════════════════════════╗");
     screenGotoxy(boxX, boxY + 1);
-    printf("| GUIA DO MAPA                        |");
-
+    printf("║  GUIA DO MAPA                             ║");
     screenGotoxy(boxX, boxY + 2);
-    printf("| (o) Buraco -> Reinicia              |");
-
+    printf("║  (o) Buraco  -> Retorna ao início do mapa ║");
     screenGotoxy(boxX, boxY + 3);
-    printf("| Terminal correto -> +10 pontos      |");
-
+    printf("║  (^) Espinho -> -5 pontos                 ║");
     screenGotoxy(boxX, boxY + 4);
-    printf("| Terminal incorreto -> -5 pontos     |");
-
+    printf("║  Cameras -> Reseta os terminais A, B, C   ║");
     screenGotoxy(boxX, boxY + 5);
-    printf("| (^) Espinho -> -5 pontos            |");
-
+    printf("║  A/B/C -> Digite 0 ou 1                   ║");
     screenGotoxy(boxX, boxY + 6);
-    printf("| Cameras -> -5 pontos                |");
-
+    printf("║  Terminal correto -> +10 pontos           ║");
     screenGotoxy(boxX, boxY + 7);
-    printf("| Dica: fique imóvel e a              |");
-
+    printf("║  Terminal incorreto -> -5 pontos          ║");
     screenGotoxy(boxX, boxY + 8);
-    printf("| magia da Pixie te protege           |");
+    printf("║  (S)  -> Saida                            ║");
     screenGotoxy(boxX, boxY + 9);
-    printf("+-------------------------------------+");
+    printf("╚═══════════════════════════════════════════╩");
 
     screenUpdate();
 }
